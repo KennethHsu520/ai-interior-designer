@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRoomStore, useSelectedWall } from '@/store/useRoomStore'
 import { bbox, clampItem, uid, wallPoint, wallSegment } from '@/lib/geometry'
 import { compressImage, deletePhoto, loadPhoto, savePhoto } from '@/lib/image'
-import { itemTypeInfo, WALL_ITEM_TYPES, type WallItem, type WallItemType } from '@/types/room'
+import { DEFAULT_SWING, itemTypeInfo, WALL_ITEM_TYPES, type DoorSwing, type WallItem, type WallItemType } from '@/types/room'
 import NumberField from '@/components/ui/NumberField'
 import WallElevation from './WallElevation'
 
@@ -373,6 +373,7 @@ export default function WallPhotoPanel() {
                       <NumberField compact label="寬" value={it.width} onCommit={(v) => updateItem(index, it.id, { width: v })} validate={(v) => (v <= 0 ? '需大於 0' : null)} />
                       <NumberField compact label="高" value={it.height} onCommit={(v) => updateItem(index, it.id, { height: v })} validate={(v) => (v <= 0 ? '需大於 0' : null)} />
                     </div>
+                    {it.type === 'door' && <DoorSwingEditor swing={it.swing ?? DEFAULT_SWING} width={it.width} onChange={(sw) => updateItem(index, it.id, { swing: sw })} />}
                   </div>
                 )}
               </li>
@@ -407,6 +408,81 @@ export default function WallPhotoPanel() {
           </button>
         )}
       </section>
+    </div>
+  )
+}
+
+function DoorSwingEditor({ swing, width, onChange }: { swing: DoorSwing; width: number; onChange: (s: DoorSwing) => void }) {
+  const seg = (active: boolean) =>
+    `flex-1 rounded-md px-2 py-1 text-[11px] font-semibold ${active ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50'}`
+  const deg = swing.angle
+  const t = (deg * Math.PI) / 180
+  const dir = swing.hinge === 'start' ? 1 : -1
+  const ny = swing.side === 'in' ? 1 : -1
+  const hx = swing.hinge === 'start' ? 14 : 66
+  const ex = hx + dir * 46 * Math.cos(t)
+  const ey = 30 + ny * 46 * Math.sin(t)
+  const sx = hx + dir * 46
+  const large = deg > 180 ? 1 : 0
+  const sweep = (dir === 1) === (ny === 1) ? 1 : 0
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-white/70 p-2">
+      <div className="flex items-start gap-3">
+        <svg viewBox="0 0 80 80" className="h-20 w-20 shrink-0 rounded-md bg-slate-50" aria-label="開門示意圖">
+          <rect x="0" y="27" width="80" height="6" fill="#cbd5e1" />
+          <rect x="14" y="27" width="52" height="6" fill="#f8fafc" />
+          <path d={`M ${sx} 30 A 46 46 0 ${large} ${sweep} ${ex} ${ey} L ${hx} 30 Z`} fill="#f59e0b" fillOpacity="0.15" stroke="#f59e0b" strokeDasharray="3 2" strokeWidth="1" />
+          <line x1={hx} y1="30" x2={ex} y2={ey} stroke="#b45309" strokeWidth="3" strokeLinecap="round" />
+          <circle cx={hx} cy="30" r="2.5" fill="#1e293b" />
+          <text x="40" y="76" textAnchor="middle" fontSize="8" fill="#64748b">
+            房間內
+          </text>
+          <text x="40" y="10" textAnchor="middle" fontSize="8" fill="#94a3b8">
+            房間外
+          </text>
+        </svg>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 text-[11px] text-slate-500">
+          <span className="font-bold text-slate-700">開門方式</span>
+          <span>從房間內看這面牆時的方向。橘色扇形是開門範圍，家具不能放在裡面。</span>
+          <span className="tabular-nums">開門半徑 {width.toFixed(2)} m</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-1 text-[11px]">
+          <span className="font-medium text-slate-500">鉸鏈在</span>
+          <div className="flex gap-1 rounded-lg bg-slate-100 p-0.5">
+            <button className={seg(swing.hinge === 'start')} onClick={() => onChange({ ...swing, hinge: 'start' })}>
+              左側
+            </button>
+            <button className={seg(swing.hinge === 'end')} onClick={() => onChange({ ...swing, hinge: 'end' })}>
+              右側
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1 text-[11px]">
+          <span className="font-medium text-slate-500">開向</span>
+          <div className="flex gap-1 rounded-lg bg-slate-100 p-0.5">
+            <button className={seg(swing.side === 'in')} onClick={() => onChange({ ...swing, side: 'in' })}>
+              往內開
+            </button>
+            <button className={seg(swing.side === 'out')} onClick={() => onChange({ ...swing, side: 'out' })}>
+              往外開
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-end gap-2">
+        <div className="w-24">
+          <NumberField compact label="開啟角度" suffix="°" step={5} digits={0} value={deg} validate={(v) => (v < 30 || v > 180 ? '30～180°' : null)} onCommit={(v) => onChange({ ...swing, angle: v })} />
+        </div>
+        <div className="flex flex-1 gap-1">
+          {[90, 110, 135, 180].map((a) => (
+            <button key={a} onClick={() => onChange({ ...swing, angle: a })} className={`flex-1 rounded-md border px-1 py-1 text-[11px] ${deg === a ? 'border-amber-400 bg-amber-50 font-semibold text-amber-700' : 'border-slate-200 bg-white text-slate-600'}`}>
+              {a}°
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

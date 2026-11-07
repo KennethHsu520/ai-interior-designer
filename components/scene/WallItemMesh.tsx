@@ -109,8 +109,9 @@ export default function WallItemMesh({
           <boxGeometry args={[w, h, 0.03]} />
           <meshStandardMaterial
             color={isDoor ? '#c9a46c' : '#bfe3ff'}
+            depthWrite={!isDoor}
             transparent
-            opacity={isDoor ? opacity * 0.85 : 0.35}
+            opacity={isDoor ? (selected ? 0.3 : 0.12) : 0.35}
             roughness={isDoor ? 0.8 : 0.1}
           />
           {selected && <Edges color="#f59e0b" lineWidth={3} />}

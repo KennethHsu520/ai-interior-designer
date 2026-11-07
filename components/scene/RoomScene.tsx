@@ -13,6 +13,7 @@ import { useCollisions } from '@/lib/useCollisions'
 import { itemTypeInfo } from '@/types/room'
 import Wall from './Wall'
 import FurnitureMesh from './FurnitureMesh'
+import DoorSwings from './DoorSwings'
 import { sceneBridge, type ViewCommand } from './bridge'
 
 function Floor() {
@@ -287,6 +288,7 @@ export default function RoomScene() {
         <Wall key={`${i}-${floor.length}`} index={i} />
       ))}
       <CeilingItems />
+      <DoorSwings />
       {stage === 'furniture' && <FurnitureLayer />}
       <OrbitControls
         makeDefault

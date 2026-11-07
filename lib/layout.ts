@@ -1,6 +1,6 @@
 import { furnitureDims } from './catalog'
-import type { CatalogItem, PlacedFurniture, Room } from '@/types/room'
-import { bbox, signedArea, wallPoint, wallSegment } from './geometry'
+import type { CatalogItem, PlacedFurniture, Room, WallItem } from '@/types/room'
+import { bbox, doorSwingGeometry, signedArea, wallPoint, wallSegment } from './geometry'
 import { resolveAll } from './collision'
 
 export function facingAngle(nx: number, nz: number) {
@@ -66,6 +66,19 @@ export function heuristicLayout(room: Room, list: PlacedFurniture[], catalog: Ma
   return resolveAll(room, ordered, catalog)
 }
 
+function doorForAI(room: Room, i: number, it: WallItem) {
+  const g = doorSwingGeometry(room.floor, i, it, 8)
+  const a = wallPoint(room.floor, i, it.offset)
+  const b = wallPoint(room.floor, i, it.offset + it.width)
+  const r = (p: { x: number; z: number }) => ({ x: +p.x.toFixed(2), z: +p.z.toFixed(2) })
+  const approach = 0.6
+  const front = [a, b, { x: b.x + g.inward.x * approach, z: b.z + g.inward.z * approach }, { x: a.x + g.inward.x * approach, z: a.z + g.inward.z * approach }]
+  return {
+    swing: { hinge: r(g.hinge), opensInto: g.swing.side === 'in' ? 'room' : 'outside', angleDeg: g.swing.angle, radius: +it.width.toFixed(2) },
+    clearZones: (g.swing.side === 'in' ? [g.polygon, front] : [front]).map((z) => z.map(r)),
+  }
+}
+
 export function describeRoomForAI(room: Room) {
   return {
     unit: 'meter',
@@ -90,6 +103,7 @@ export function describeRoomForAI(room: Room) {
             width: +it.width.toFixed(2),
             elevation: +it.elevation.toFixed(2),
             height: +it.height.toFixed(2),
+            ...(it.type === 'door' ? doorForAI(room, i, it) : {}),
           }
         }),
       }

@@ -1,6 +1,6 @@
 import type { CatalogItem, PlacedFurniture, Room, Vec2 } from '@/types/room'
 import { furnitureDims } from './catalog'
-import { isConvexVertex, pointInPolygon, segmentsIntersect, signedArea, wallPoint, wallSegment } from './geometry'
+import { doorSwingGeometry, isConvexVertex, pointInPolygon, segmentsIntersect, signedArea, wallPoint, wallSegment } from './geometry'
 
 export type OBB = { cx: number; cz: number; hw: number; hd: number; angle: number }
 
@@ -68,18 +68,46 @@ export function obbInsideRoom(b: OBB, floor: Vec2[]) {
   return true
 }
 
-export function doorZones(room: Room): OBB[] {
-  const zones: OBB[] = []
+export const DOOR_APPROACH = 0.6
+
+export function doorZones(room: Room): Vec2[][] {
+  const zones: Vec2[][] = []
   room.walls.forEach((w, i) => {
-    const seg = wallSegment(room.floor, i)
     for (const it of w.items) {
       if (it.type !== 'door') continue
-      const depth = Math.min(Math.max(it.width, 0.6), 1.0)
-      const center = wallPoint(room.floor, i, it.offset + it.width / 2, depth / 2)
-      zones.push({ cx: center.x, cz: center.z, hw: it.width / 2, hd: depth / 2, angle: seg.angle })
+      const g = doorSwingGeometry(room.floor, i, it)
+      if (g.swing.side === 'in') {
+        if (g.swing.angle <= 180) zones.push(g.polygon)
+      }
+      const a = wallPoint(room.floor, i, it.offset)
+      const b = wallPoint(room.floor, i, it.offset + it.width)
+      const d = g.swing.side === 'in' ? Math.min(DOOR_APPROACH, it.width) : DOOR_APPROACH
+      zones.push([a, b, { x: b.x + g.inward.x * d, z: b.z + g.inward.z * d }, { x: a.x + g.inward.x * d, z: a.z + g.inward.z * d }])
     }
   })
   return zones
+}
+
+function axesOf(poly: Vec2[]) {
+  const out: Vec2[] = []
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]
+    const b = poly[(i + 1) % poly.length]
+    const dx = b.x - a.x
+    const dz = b.z - a.z
+    const l = Math.hypot(dx, dz)
+    if (l > 1e-9) out.push({ x: -dz / l, z: dx / l })
+  }
+  return out
+}
+
+export function convexOverlap(a: Vec2[], b: Vec2[]) {
+  for (const axis of [...axesOf(a), ...axesOf(b)]) {
+    const [amin, amax] = project(a, axis)
+    const [bmin, bmax] = project(b, axis)
+    if (amax <= bmin + 1e-6 || bmax <= amin + 1e-6) return false
+  }
+  return true
 }
 
 export type CollisionResult = { ok: boolean; reasons: string[] }
@@ -101,7 +129,7 @@ export function checkFurniture(
     if (!obbInsideRoom(b.obb, room.floor)) reasons.push('穿牆或超出房間')
     const exempt = NO_COLLIDE.has(b.item.category)
     if (!exempt) {
-      if (doors.some((d) => obbOverlap(b.obb, d))) reasons.push('擋住門的開門範圍')
+      if (doors.some((d) => convexOverlap(obbCorners(b.obb), d))) reasons.push('擋住門的開門範圍')
       boxes.forEach((o, j) => {
         if (!o || j === i || NO_COLLIDE.has(o.item.category)) return
         if (obbOverlap(b.obb, o.obb)) reasons.push(`與「${o.item.name}」重疊`)
@@ -112,11 +140,11 @@ export function checkFurniture(
   return result
 }
 
-function checkOne(room: Room, doors: OBB[], cand: PlacedFurniture, others: { item: CatalogItem; obb: OBB }[], item: CatalogItem) {
+function checkOne(room: Room, doors: Vec2[][], cand: PlacedFurniture, others: { item: CatalogItem; obb: OBB }[], item: CatalogItem) {
   const obb = furnitureOBB(cand, item)
   if (!obbInsideRoom(obb, room.floor)) return false
   if (NO_COLLIDE.has(item.category)) return true
-  if (doors.some((d) => obbOverlap(obb, d))) return false
+  if (doors.some((d) => convexOverlap(obbCorners(obb), d))) return false
   return !others.some((o) => !NO_COLLIDE.has(o.item.category) && obbOverlap(obb, o.obb))
 }
 

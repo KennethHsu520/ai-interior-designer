@@ -17,6 +17,7 @@ const ItemSchema = z.object({
   width: z.number(),
   height: z.number(),
   confirmed: z.boolean(),
+  swing: z.object({ hinge: z.enum(['start', 'end']), side: z.enum(['in', 'out']), angle: z.number() }).optional(),
 })
 
 const RequestSchema = z.object({
@@ -36,6 +37,8 @@ const RequestSchema = z.object({
         position: z.object({ x: z.number(), y: z.number(), z: z.number() }),
         rotationY: z.number(),
         scale: z.number(),
+        size: z.object({ width: z.number(), depth: z.number(), height: z.number() }).optional(),
+        colors: z.record(z.string(), z.string()).optional(),
       }),
     )
     .min(1)
@@ -57,8 +60,11 @@ rotationY 是繞 y 軸的弧度，旋轉後正面方向為 (sin(rotationY), cos(
 貼牆擺放時，中心點 = 牆上某點 + inwardNormal × (depth/2 + 0.02)。
 規則：
 - 家具必須完全在房間多邊形內，不可互相重疊（地毯、裝飾除外）。
-- 門前方約 1 公尺、與門同寬的範圍要淨空，讓門可以打開。
-- 床頭、沙發背、櫃子通常靠牆；床頭不要擋住窗戶；書桌適合靠窗；留至少 0.6 公尺走道。
+- 門的 swing 資料描述開門方式：hinge 為鉸鏈位置、opensInto 為往房間內或外開、angleDeg 為開啟角度。clearZones 是禁止擺放的多邊形清單（門扇轉動掃過的扇形、門前通行區），任何家具（地毯除外）都不可與其中任何一個重疊。
+- 往外開的門仍要在門前留至少 0.6 公尺通行空間。
+- 床頭、沙發背、櫃子通常靠牆；床頭不要擋住窗戶；書桌適合靠窗。
+- 主要動線至少 0.9 公尺，次要走道至少 0.6 公尺；床的兩側或單側至少留 0.6 公尺上下床空間；餐椅後方留 0.75 公尺拉椅空間；衣櫃、抽屜櫃正前方留 0.9 公尺開門開抽屜空間；沙發與茶几間距約 0.4～0.45 公尺。
+- 不要擋住開關、插座與冷氣出風口的使用。
 - 尊重使用者的文字需求。
 - 每一件家具都要輸出一筆，id 必須與輸入相同。
 - explanation 用一句繁體中文說明這次的配置或改了什麼。`

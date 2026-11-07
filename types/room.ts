@@ -10,6 +10,10 @@ export type WallItemType =
   | 'furniture'
   | 'other'
 
+export type DoorSwing = { hinge: 'start' | 'end'; side: 'in' | 'out'; angle: number }
+
+export const DEFAULT_SWING: DoorSwing = { hinge: 'start', side: 'in', angle: 90 }
+
 export type WallItem = {
   id: string
   type: WallItemType
@@ -20,6 +24,7 @@ export type WallItem = {
   height: number
   confidence?: number
   confirmed: boolean
+  swing?: DoorSwing
 }
 
 export type PhotoBounds = { x0: number; x1: number; y0: number; y1: number }

@@ -6,9 +6,11 @@ import {
   bbox,
   cornerAngle,
   cornerLabelPoint,
+  doorSwingGeometry,
   formatAngle,
   moveWallParallel,
   projectOnWall,
+  wallPoint,
   round2,
   validateFloor,
   wallSegment,
@@ -230,7 +232,7 @@ export default function FloorPlanEditor() {
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div className="min-w-0">
             <h2 className="text-base font-bold text-slate-800">自訂格局（俯視圖）</h2>
-            <p className="text-xs text-slate-500">拖曳牆面＝平行移動・拖曳轉角＝移動・雙擊牆面＝加轉折點・鎖住的數值不會被改動・每格 0.5m</p>
+            <p className="text-xs text-slate-500">拖曳牆面＝平行移動・拖曳轉角＝移動・雙擊牆面＝加轉折點・鎖住的數值不會被改動・橘色扇形為開門範圍・每格 0.5m</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <button
@@ -292,6 +294,37 @@ export default function FloorPlanEditor() {
               className="pointer-events-none"
             />
 
+            {walls.slice(0, shown.length).flatMap((w, i) =>
+              w.items
+                .filter((it) => it.type === 'door' || it.type === 'window')
+                .map((it) => {
+                  const a = wallPoint(shown, i, it.offset)
+                  const b = wallPoint(shown, i, it.offset + it.width)
+                  if (it.type === 'window') {
+                    const s = wallSegment(shown, i)
+                    const o = unit * 0.35
+                    return (
+                      <g key={it.id} className="pointer-events-none">
+                        <line x1={a.x} y1={a.z} x2={b.x} y2={b.z} stroke="#ffffff" strokeWidth={unit * 0.9} />
+                        {[-1, 0, 1].map((k) => (
+                          <line key={k} x1={a.x + s.normal.x * o * k} y1={a.z + s.normal.z * o * k} x2={b.x + s.normal.x * o * k} y2={b.z + s.normal.z * o * k} stroke="#0284c7" strokeWidth={unit * 0.14} />
+                        ))}
+                      </g>
+                    )
+                  }
+                  const g = doorSwingGeometry(shown, i, it, 24)
+                  const path = `M ${g.hinge.x} ${g.hinge.z} ` + g.arc.map((p) => `L ${p.x} ${p.z}`).join(' ') + ' Z'
+                  const arcPath = `M ${g.arc[0].x} ${g.arc[0].z} ` + g.arc.slice(1).map((p) => `L ${p.x} ${p.z}`).join(' ')
+                  return (
+                    <g key={it.id} className="pointer-events-none">
+                      <line x1={a.x} y1={a.z} x2={b.x} y2={b.z} stroke="#ffffff" strokeWidth={unit * 0.9} />
+                      <path d={path} fill="#f59e0b" fillOpacity={g.swing.side === 'in' ? 0.12 : 0.05} />
+                      <path d={arcPath} fill="none" stroke="#b45309" strokeWidth={unit * 0.12} strokeDasharray={`${unit * 0.5} ${unit * 0.3}`} />
+                      <line x1={g.hinge.x} y1={g.hinge.z} x2={g.leafEnd.x} y2={g.leafEnd.z} stroke="#b45309" strokeWidth={unit * 0.3} strokeLinecap="round" />
+                    </g>
+                  )
+                }),
+            )}
             {shown.map((_, i) => {
               const deg = cornerAngle(shown, i)
               const locked = locks.angles[i]

@@ -1,4 +1,4 @@
-import type { Vec2, Wall, WallItem } from '@/types/room'
+import { DEFAULT_SWING, type Vec2, type Wall, type WallItem } from '@/types/room'
 
 export const MIN_WALL = 0.01
 export const MIN_HEIGHT = 2
@@ -295,4 +295,23 @@ export function moveWallParallel(floor: Vec2[], i: number, d: number): Vec2[] {
 export function projectOnWall(floor: Vec2[], i: number, p: Vec2) {
   const s = wallSegment(floor, i)
   return (p.x - s.a.x) * s.dir.x + (p.z - s.a.z) * s.dir.z
+}
+
+export function doorSwingGeometry(floor: Vec2[], wallIndex: number, item: WallItem, segments = 16) {
+  const swing = item.swing ?? DEFAULT_SWING
+  const s = wallSegment(floor, wallIndex)
+  const sign = signedArea(floor) < 0 ? -1 : 1
+  const inward = { x: s.normal.x * sign, z: s.normal.z * sign }
+  const hingeOffset = swing.hinge === 'start' ? item.offset : item.offset + item.width
+  const hinge = wallPoint(floor, wallIndex, hingeOffset)
+  const u = swing.hinge === 'start' ? s.dir : { x: -s.dir.x, z: -s.dir.z }
+  const n = swing.side === 'in' ? inward : { x: -inward.x, z: -inward.z }
+  const r = item.width
+  const max = (Math.min(Math.max(swing.angle, 1), 180) * Math.PI) / 180
+  const arc: Vec2[] = []
+  for (let k = 0; k <= segments; k++) {
+    const t = (max * k) / segments
+    arc.push({ x: hinge.x + r * (Math.cos(t) * u.x + Math.sin(t) * n.x), z: hinge.z + r * (Math.cos(t) * u.z + Math.sin(t) * n.z) })
+  }
+  return { hinge, arc, leafEnd: arc[arc.length - 1], closedEnd: arc[0], polygon: [hinge, ...arc], swing, inward }
 }
