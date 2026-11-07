@@ -17,3 +17,33 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+.sheet {
+  width: 297mm;
+  height: 210mm;
+  break-after: page;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .sheet {
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  .sheet:last-child {
+    break-after: auto;
+  }
+}

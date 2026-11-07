@@ -24,6 +24,7 @@ export default function Editor() {
   const resetAll = useRoomStore((s) => s.resetAll)
   const [tab, setTab] = useState<'catalog' | 'chat'>('catalog')
   const [menu, setMenu] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
   const importRef = useRef<HTMLInputElement>(null)
@@ -75,7 +76,16 @@ export default function Editor() {
             ☰
           </button>
           {menu && (
-            <div className="absolute right-0 top-11 z-30 flex w-48 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-xl" onMouseLeave={() => setMenu(false)}>
+            <div
+              className="absolute right-0 top-11 z-30 flex w-56 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-xl"
+              onMouseLeave={() => {
+                setMenu(false)
+                setConfirmReset(false)
+              }}
+            >
+              <Link href="/plan" className="border-b border-slate-100 px-4 py-2.5 font-semibold text-sky-700 hover:bg-sky-50">
+                📐 輸出設計圖（PDF／CAD）
+              </Link>
               <button
                 className="px-4 py-2.5 text-left hover:bg-slate-50"
                 onClick={async () => {
@@ -98,15 +108,30 @@ export default function Editor() {
               <Link href="/licenses" className="px-4 py-2.5 hover:bg-slate-50">
                 📜 素材來源與授權
               </Link>
-              <button
-                className="border-t border-slate-100 px-4 py-2.5 text-left text-red-600 hover:bg-red-50"
-                onClick={() => {
-                  setMenu(false)
-                  if (window.confirm('確定要清除目前房間，重新開始嗎？（建議先匯出備份）')) resetAll()
-                }}
-              >
-                🗑️ 重新開始
-              </button>
+              {confirmReset ? (
+                <div className="flex flex-col gap-2 border-t border-slate-100 bg-red-50 px-4 py-2.5 text-xs text-red-700">
+                  <span>確定清除目前房間與家具？無法復原，建議先匯出 JSON 備份。</span>
+                  <span className="flex gap-2">
+                    <button className="flex-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-600" onClick={() => setConfirmReset(false)}>
+                      取消
+                    </button>
+                    <button
+                      className="flex-1 rounded-md bg-red-600 px-2 py-1 font-semibold text-white"
+                      onClick={() => {
+                        setConfirmReset(false)
+                        setMenu(false)
+                        resetAll()
+                      }}
+                    >
+                      清除
+                    </button>
+                  </span>
+                </div>
+              ) : (
+                <button className="border-t border-slate-100 px-4 py-2.5 text-left text-red-600 hover:bg-red-50" onClick={() => setConfirmReset(true)}>
+                  🗑️ 重新開始
+                </button>
+              )}
             </div>
           )}
           <input

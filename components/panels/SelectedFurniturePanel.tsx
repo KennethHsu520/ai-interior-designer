@@ -7,6 +7,7 @@ import { rolesOf, roleLabel, SWATCHES, type Role } from '@/lib/procedural'
 import NumberField from '@/components/ui/NumberField'
 import { snapAngle } from '@/lib/collision'
 import { useCollisions } from '@/lib/useCollisions'
+import { clearanceIssues, cm, wallDistances } from '@/lib/planData'
 
 const STEP = Math.PI / 12
 
@@ -18,6 +19,8 @@ export default function SelectedFurniturePanel() {
   const selectFurniture = useRoomStore((s) => s.selectFurniture)
   const collisions = useCollisions()
   const [role, setRole] = useState<Role>('main')
+  const room = useRoomStore((s) => s.room)
+  const allFurniture = useRoomStore((s) => s.furniture)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -47,6 +50,8 @@ export default function SelectedFurniturePanel() {
   const label = (r: Role) => (item.procedural ? roleLabel(item.procedural.kind, r) : '整體色調')
   const setSize = (key: 'width' | 'depth' | 'height', v: number) => updateFurniture(f.id, { size: { ...size, [key]: v } })
   const setColor = (c: string) => updateFurniture(f.id, { colors: { ...(f.colors ?? {}), [activeRole]: c } })
+  const distances = wallDistances(room, f, item).slice(0, 3)
+  const advice = clearanceIssues(room, allFurniture, CATALOG_MAP).get(f.id) ?? []
   const changed = !!f.size || !!(f.colors && Object.keys(f.colors).length)
 
   return (
@@ -68,6 +73,23 @@ export default function SelectedFurniturePanel() {
             <li key={r}>⚠️ {r}</li>
           ))}
         </ul>
+      )}
+      {advice.length > 0 && (
+        <ul className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">
+          {advice.map((a) => (
+            <li key={a}>💡 {a}</li>
+          ))}
+        </ul>
+      )}
+      {distances.length > 0 && (
+        <div className="flex flex-wrap gap-1 text-[11px]">
+          <span className="text-slate-500">離牆：</span>
+          {distances.map((d) => (
+            <span key={d.wall} className={`rounded-full px-2 py-0.5 tabular-nums ${d.distance < 0.005 ? 'bg-slate-800 text-white' : 'bg-white text-slate-700'}`}>
+              牆{d.wall + 1} {d.distance < 0.005 ? '貼牆' : `${cm(d.distance)} cm`}
+            </span>
+          ))}
+        </div>
       )}
       <div className="grid grid-cols-3 gap-2">
         <button
