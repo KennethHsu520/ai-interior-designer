@@ -1,0 +1,258 @@
+{
+  "Sofa_01": {
+    "name": "Sofa 01",
+    "dimensions": [
+      1571.4675784111023,
+      658.0145359039307,
+      796.515051391907
+    ]
+  },
+  "sofa_02": {
+    "name": "Sofa 02",
+    "dimensions": [
+      1807.1673512458801,
+      817.7513778209686,
+      709.4888985157013
+    ]
+  },
+  "sofa_03": {
+    "name": "Sofa 03",
+    "dimensions": [
+      2731.17733001709,
+      925.0842034816742,
+      1118.2640366605483
+    ]
+  },
+  "ArmChair_01": {
+    "name": "Arm Chair 01",
+    "dimensions": [
+      848.4309017658234,
+      765.7602727413177,
+      1065.087635157397
+    ]
+  },
+  "modern_arm_chair_01": {
+    "name": "Modern Arm Chair 01",
+    "dimensions": [
+      820.3444182872772,
+      986.5616858005524,
+      1022.8520567470696
+    ]
+  },
+  "mid_century_lounge_chair": {
+    "name": "Mid Century Lounge Chair",
+    "dimensions": [
+      1008.6143612861633,
+      1190.310776233673,
+      1169.0847246776136
+    ]
+  },
+  "Ottoman_01": {
+    "name": "Ottoman 01",
+    "dimensions": [
+      884.5577836036682,
+      621.1484670639038,
+      624.3239195573551
+    ]
+  },
+  "CoffeeTable_01": {
+    "name": "Coffee Table 01",
+    "dimensions": [
+      1540.0111079216003,
+      972.847044467926,
+      523.237330140546
+    ]
+  },
+  "modern_coffee_table_01": {
+    "name": "Modern Coffee Table 01",
+    "dimensions": [
+      1201.8300294876099,
+      600.0000834465027,
+      389.99998569488525
+    ]
+  },
+  "modern_coffee_table_02": {
+    "name": "Modern Coffee Table 02",
+    "dimensions": [
+      1199.1113424301147,
+      1199.6567845344543,
+      369.2496716976166
+    ]
+  },
+  "coffee_table_round_01": {
+    "name": "Coffee Table Round 01",
+    "dimensions": [
+      1301.3009428977966,
+      1301.3015985488892,
+      491.0094439983368
+    ]
+  },
+  "side_table_01": {
+    "name": "Side Table 01",
+    "dimensions": [
+      550.0000715255737,
+      450.00001788139343,
+      550.6622816901654
+    ]
+  },
+  "side_table_tall_01": {
+    "name": "Side Table Tall 01",
+    "dimensions": [
+      383.98271799087524,
+      383.98271799087524,
+      761.1514969321433
+    ]
+  },
+  "ClassicNightstand_01": {
+    "name": "Classic Nightstand 01",
+    "dimensions": [
+      567.7522718906403,
+      424.192875623703,
+      699.9649838462041
+    ]
+  },
+  "painted_wooden_nightstand": {
+    "name": "Painted Wooden Nightstand",
+    "dimensions": [
+      504.5645833015442,
+      508.71600210666656,
+      615.5209708555738
+    ]
+  },
+  "old_bed_frame": {
+    "name": "Old Bed Frame",
+    "dimensions": [
+      904.6578407287598,
+      2001.7260313034058,
+      1201.4837953575998
+    ]
+  },
+  "GothicBed_01": {
+    "name": "Gothic Bed 01",
+    "dimensions": [
+      1493.751883506775,
+      2039.9999022483826,
+      1533.8402975614968
+    ]
+  },
+  "vintage_day_bed": {
+    "name": "Vintage Day Bed",
+    "dimensions": [
+      1972.5552201271057,
+      854.77614402771,
+      1127.3465404283343
+    ]
+  },
+  "Shelf_01": {
+    "name": "Shelf 01",
+    "dimensions": [
+      1003.443717956543,
+      256.9795063869833,
+      2080.310344696045
+    ]
+  },
+  "wooden_bookshelf_worn": {
+    "name": "Wooden Bookshelf Worn",
+    "dimensions": [
+      1373.95179271698,
+      581.3020169734955,
+      2063.442051410675
+    ]
+  },
+  "drawer_cabinet": {
+    "name": "Drawer Cabinet",
+    "dimensions": [
+      1141.0778760910034,
+      488.08445036411285,
+      1881.253957748413
+    ]
+  },
+  "modern_wooden_cabinet": {
+    "name": "Modern Wooden Cabinet",
+    "dimensions": [
+      2440.0004148483276,
+      520.0000107288361,
+      680.1425069570541
+    ]
+  },
+  "painted_wooden_cabinet": {
+    "name": "Painted Wooden Cabinet",
+    "dimensions": [
+      1194.674551486969,
+      616.6356205940247,
+      1181.8697528215125
+    ]
+  },
+  "metal_office_desk": {
+    "name": "Metal Office Desk",
+    "dimensions": [
+      2000.0003576278687,
+      947.2135305404663,
+      787.5000089406967
+    ]
+  },
+  "SchoolDesk_01": {
+    "name": "School Desk 01",
+    "dimensions": [
+      711.7760181427002,
+      545.9675788879395,
+      882.6298794883769
+    ]
+  },
+  "dining_chair_02": {
+    "name": "Dining Chair 02",
+    "dimensions": [
+      433.5707724094391,
+      576.4201134443283,
+      973.3776897192001
+    ]
+  },
+  "round_wooden_table_02": {
+    "name": "Round Wooden Table 02",
+    "dimensions": [
+      796.1780428886414,
+      796.1780428886414,
+      746.0266395536621
+    ]
+  },
+  "dining_table": {
+    "name": "Dining Table",
+    "dimensions": [
+      2255.895972251892,
+      1390.2360200881958,
+      876.989221200347
+    ]
+  },
+  "bar_chair_round_01": {
+    "name": "Bar Chair Round 01",
+    "dimensions": [
+      483.1501990556717,
+      485.99570989608765,
+      750.5484623070515
+    ]
+  },
+  "chinese_tea_table": {
+    "name": "Chinese Tea Table",
+    "dimensions": [
+      841.3148820400238,
+      835.6219828128815,
+      498.6410439014435
+    ]
+  },
+  "chinese_armchair": {
+    "name": "Chinese Armchair",
+    "dimensions": [
+      848.2747673988342,
+      788.6627614498138,
+      1587.4828653213626
+    ]
+  },
+  "ornate_mirror_01": {
+    "name": "Ornate Mirror 01",
+    "dimensions": [
+      486.4957332611084,
+      25.958335027098656,
+      744.1554069519043
+    ]
+  }
+}

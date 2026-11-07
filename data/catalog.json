@@ -1,0 +1,2368 @@
+[
+  {
+    "id": "kaykit/armchair",
+    "name": "單人沙發",
+    "category": "沙發",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/armchair.glb",
+    "size": {
+      "width": 0.85,
+      "depth": 0.756,
+      "height": 0.578
+    },
+    "rawSize": {
+      "width": 1.8,
+      "depth": 1.6,
+      "height": 1.224
+    },
+    "rawMin": {
+      "x": -0.9,
+      "y": 0,
+      "z": -0.75
+    },
+    "scale": 0.4722
+  },
+  {
+    "id": "kaykit/armchair_pillows",
+    "name": "單人沙發（抱枕）",
+    "category": "沙發",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/armchair_pillows.glb",
+    "size": {
+      "width": 0.85,
+      "depth": 0.756,
+      "height": 0.578
+    },
+    "rawSize": {
+      "width": 1.8,
+      "depth": 1.6,
+      "height": 1.224
+    },
+    "rawMin": {
+      "x": -0.9,
+      "y": 0,
+      "z": -0.75
+    },
+    "scale": 0.4722
+  },
+  {
+    "id": "kaykit/bed_double_A",
+    "name": "雙人床 A",
+    "category": "床",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/bed_double_A.glb",
+    "size": {
+      "width": 2.067,
+      "depth": 2,
+      "height": 0.667
+    },
+    "rawSize": {
+      "width": 3.1,
+      "depth": 3,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -1.55,
+      "y": 0,
+      "z": -1.5
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/bed_double_B",
+    "name": "雙人床 B",
+    "category": "床",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/bed_double_B.glb",
+    "size": {
+      "width": 2.067,
+      "depth": 2,
+      "height": 0.667
+    },
+    "rawSize": {
+      "width": 3.1,
+      "depth": 3,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -1.55,
+      "y": 0,
+      "z": -1.5
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/bed_single_A",
+    "name": "單人床 A",
+    "category": "床",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/bed_single_A.glb",
+    "size": {
+      "width": 1.067,
+      "depth": 2,
+      "height": 0.667
+    },
+    "rawSize": {
+      "width": 1.6,
+      "depth": 3,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -0.8,
+      "y": 0,
+      "z": -1.5
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/bed_single_B",
+    "name": "單人床 B",
+    "category": "床",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/bed_single_B.glb",
+    "size": {
+      "width": 1.067,
+      "depth": 2,
+      "height": 0.667
+    },
+    "rawSize": {
+      "width": 1.6,
+      "depth": 3,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -0.8,
+      "y": 0,
+      "z": -1.5
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/book_set",
+    "name": "一排書",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/book_set.glb",
+    "size": {
+      "width": 0.3,
+      "depth": 0.14,
+      "height": 0.192
+    },
+    "rawSize": {
+      "width": 0.78,
+      "depth": 0.365,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -0.39,
+      "y": -0.25,
+      "z": -0.177
+    },
+    "scale": 0.3846
+  },
+  {
+    "id": "kaykit/book_single",
+    "name": "書本",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/book_single.glb",
+    "size": {
+      "width": 0.18,
+      "depth": 0.253,
+      "height": 0.346
+    },
+    "rawSize": {
+      "width": 0.26,
+      "depth": 0.365,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -0.13,
+      "y": -0.25,
+      "z": -0.177
+    },
+    "scale": 0.6923
+  },
+  {
+    "id": "kaykit/cabinet_medium",
+    "name": "中型收納櫃",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cabinet_medium.glb",
+    "size": {
+      "width": 0.9,
+      "depth": 0.451,
+      "height": 0.45
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 1.002,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -1,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.45
+  },
+  {
+    "id": "kaykit/cabinet_medium_decorated",
+    "name": "中型收納櫃（擺飾）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cabinet_medium_decorated.glb",
+    "size": {
+      "width": 0.9,
+      "depth": 0.442,
+      "height": 0.805
+    },
+    "rawSize": {
+      "width": 2.042,
+      "depth": 1.002,
+      "height": 1.827
+    },
+    "rawMin": {
+      "x": -1,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.4408
+  },
+  {
+    "id": "kaykit/cabinet_small",
+    "name": "小型收納櫃",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cabinet_small.glb",
+    "size": {
+      "width": 0.5,
+      "depth": 0.501,
+      "height": 0.5
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 1.002,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/cabinet_small_decorated",
+    "name": "小型收納櫃（擺飾）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cabinet_small_decorated.glb",
+    "size": {
+      "width": 0.5,
+      "depth": 0.527,
+      "height": 0.772
+    },
+    "rawSize": {
+      "width": 1.048,
+      "depth": 1.104,
+      "height": 1.618
+    },
+    "rawMin": {
+      "x": -0.544,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.4772
+  },
+  {
+    "id": "kaykit/cactus_medium_A",
+    "name": "仙人掌盆栽 A",
+    "category": "植物",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cactus_medium_A.glb",
+    "size": {
+      "width": 0.638,
+      "depth": 0.607,
+      "height": 0.6
+    },
+    "rawSize": {
+      "width": 0.88,
+      "depth": 0.837,
+      "height": 0.827
+    },
+    "rawMin": {
+      "x": -0.44,
+      "y": 0,
+      "z": -0.418
+    },
+    "scale": 0.7253
+  },
+  {
+    "id": "kaykit/cactus_medium_B",
+    "name": "仙人掌盆栽 B",
+    "category": "植物",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cactus_medium_B.glb",
+    "size": {
+      "width": 0.638,
+      "depth": 0.607,
+      "height": 0.6
+    },
+    "rawSize": {
+      "width": 0.88,
+      "depth": 0.837,
+      "height": 0.827
+    },
+    "rawMin": {
+      "x": -0.44,
+      "y": 0,
+      "z": -0.418
+    },
+    "scale": 0.7253
+  },
+  {
+    "id": "kaykit/cactus_small_A",
+    "name": "小仙人掌 A",
+    "category": "植物",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cactus_small_A.glb",
+    "size": {
+      "width": 0.227,
+      "depth": 0.227,
+      "height": 0.25
+    },
+    "rawSize": {
+      "width": 0.5,
+      "depth": 0.5,
+      "height": 0.552
+    },
+    "rawMin": {
+      "x": -0.25,
+      "y": 0,
+      "z": -0.25
+    },
+    "scale": 0.4532
+  },
+  {
+    "id": "kaykit/cactus_small_B",
+    "name": "小仙人掌 B",
+    "category": "植物",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/cactus_small_B.glb",
+    "size": {
+      "width": 0.227,
+      "depth": 0.227,
+      "height": 0.25
+    },
+    "rawSize": {
+      "width": 0.5,
+      "depth": 0.5,
+      "height": 0.552
+    },
+    "rawMin": {
+      "x": -0.25,
+      "y": 0,
+      "z": -0.25
+    },
+    "scale": 0.4532
+  },
+  {
+    "id": "kaykit/chair_A",
+    "name": "餐椅 A",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_A.glb",
+    "size": {
+      "width": 0.507,
+      "depth": 0.571,
+      "height": 0.85
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.845,
+      "height": 1.258
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.47
+    },
+    "scale": 0.6755
+  },
+  {
+    "id": "kaykit/chair_A_wood",
+    "name": "木餐椅 A",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_A_wood.glb",
+    "size": {
+      "width": 0.507,
+      "depth": 0.571,
+      "height": 0.85
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.845,
+      "height": 1.258
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.47
+    },
+    "scale": 0.6755
+  },
+  {
+    "id": "kaykit/chair_B",
+    "name": "餐椅 B",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_B.glb",
+    "size": {
+      "width": 0.507,
+      "depth": 0.571,
+      "height": 0.85
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.845,
+      "height": 1.258
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.47
+    },
+    "scale": 0.6755
+  },
+  {
+    "id": "kaykit/chair_B_wood",
+    "name": "木餐椅 B",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_B_wood.glb",
+    "size": {
+      "width": 0.507,
+      "depth": 0.571,
+      "height": 0.85
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.845,
+      "height": 1.258
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.47
+    },
+    "scale": 0.6755
+  },
+  {
+    "id": "kaykit/chair_C",
+    "name": "餐椅 C",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_C.glb",
+    "size": {
+      "width": 0.53,
+      "depth": 0.661,
+      "height": 0.85
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.936,
+      "height": 1.203
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.561
+    },
+    "scale": 0.7066
+  },
+  {
+    "id": "kaykit/chair_stool",
+    "name": "圓凳",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_stool.glb",
+    "size": {
+      "width": 0.675,
+      "depth": 0.675,
+      "height": 0.45
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.75,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.375
+    },
+    "scale": 0.9
+  },
+  {
+    "id": "kaykit/chair_stool_wood",
+    "name": "木圓凳",
+    "category": "椅",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/chair_stool_wood.glb",
+    "size": {
+      "width": 0.675,
+      "depth": 0.675,
+      "height": 0.45
+    },
+    "rawSize": {
+      "width": 0.75,
+      "depth": 0.75,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -0.375,
+      "y": 0,
+      "z": -0.375
+    },
+    "scale": 0.9
+  },
+  {
+    "id": "kaykit/couch",
+    "name": "三人沙發",
+    "category": "沙發",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/couch.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.067,
+      "height": 0.816
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 1.6,
+      "height": 1.224
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -0.75
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/couch_pillows",
+    "name": "三人沙發（抱枕）",
+    "category": "沙發",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/couch_pillows.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.067,
+      "height": 0.816
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 1.6,
+      "height": 1.224
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -0.75
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/lamp_standing",
+    "name": "立燈",
+    "category": "燈",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/lamp_standing.glb",
+    "size": {
+      "width": 0.635,
+      "depth": 0.635,
+      "height": 1.6
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 1,
+      "height": 2.52
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.6349
+  },
+  {
+    "id": "kaykit/lamp_table",
+    "name": "桌燈",
+    "category": "燈",
+    "styles": [
+      "可愛",
+      "現代"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/lamp_table.glb",
+    "size": {
+      "width": 0.44,
+      "depth": 0.44,
+      "height": 0.45
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 1,
+      "height": 1.022
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": -0.002,
+      "z": -0.5
+    },
+    "scale": 0.4405
+  },
+  {
+    "id": "kaykit/pictureframe_large_A",
+    "name": "大掛畫 A",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_large_A.glb",
+    "size": {
+      "width": 0.8,
+      "depth": 0.158,
+      "height": 0.95
+    },
+    "rawSize": {
+      "width": 1.01,
+      "depth": 0.2,
+      "height": 1.2
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": -0.6,
+      "z": 0
+    },
+    "scale": 0.7921
+  },
+  {
+    "id": "kaykit/pictureframe_large_B",
+    "name": "大掛畫 B",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_large_B.glb",
+    "size": {
+      "width": 0.8,
+      "depth": 0.08,
+      "height": 0.48
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 0.2,
+      "height": 1.2
+    },
+    "rawMin": {
+      "x": -1,
+      "y": -0.6,
+      "z": 0
+    },
+    "scale": 0.4
+  },
+  {
+    "id": "kaykit/pictureframe_medium",
+    "name": "中掛畫",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_medium.glb",
+    "size": {
+      "width": 0.5,
+      "depth": 0.143,
+      "height": 0.643
+    },
+    "rawSize": {
+      "width": 0.7,
+      "depth": 0.2,
+      "height": 0.9
+    },
+    "rawMin": {
+      "x": -0.35,
+      "y": -0.45,
+      "z": 0
+    },
+    "scale": 0.7143
+  },
+  {
+    "id": "kaykit/pictureframe_small_A",
+    "name": "小相框 A",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_small_A.glb",
+    "size": {
+      "width": 0.25,
+      "depth": 0.1,
+      "height": 0.3
+    },
+    "rawSize": {
+      "width": 0.5,
+      "depth": 0.2,
+      "height": 0.6
+    },
+    "rawMin": {
+      "x": -0.25,
+      "y": -0.3,
+      "z": 0
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/pictureframe_small_B",
+    "name": "小相框 B",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_small_B.glb",
+    "size": {
+      "width": 0.25,
+      "depth": 0.071,
+      "height": 0.157
+    },
+    "rawSize": {
+      "width": 0.7,
+      "depth": 0.2,
+      "height": 0.44
+    },
+    "rawMin": {
+      "x": -0.35,
+      "y": -0.22,
+      "z": 0
+    },
+    "scale": 0.3571
+  },
+  {
+    "id": "kaykit/pictureframe_small_C",
+    "name": "小相框 C",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_small_C.glb",
+    "size": {
+      "width": 0.25,
+      "depth": 0.1,
+      "height": 0.25
+    },
+    "rawSize": {
+      "width": 0.5,
+      "depth": 0.2,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -0.25,
+      "y": -0.25,
+      "z": 0
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/pictureframe_standing_A",
+    "name": "立式相框 A",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_standing_A.glb",
+    "size": {
+      "width": 0.2,
+      "depth": 0.152,
+      "height": 0.247
+    },
+    "rawSize": {
+      "width": 0.5,
+      "depth": 0.379,
+      "height": 0.619
+    },
+    "rawMin": {
+      "x": -0.25,
+      "y": -0.001,
+      "z": -0.208
+    },
+    "scale": 0.4
+  },
+  {
+    "id": "kaykit/pictureframe_standing_B",
+    "name": "立式相框 B",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pictureframe_standing_B.glb",
+    "size": {
+      "width": 0.2,
+      "depth": 0.102,
+      "height": 0.134
+    },
+    "rawSize": {
+      "width": 0.7,
+      "depth": 0.357,
+      "height": 0.468
+    },
+    "rawMin": {
+      "x": -0.35,
+      "y": 0,
+      "z": -0.186
+    },
+    "scale": 0.2857
+  },
+  {
+    "id": "kaykit/pillow_A",
+    "name": "抱枕 A",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pillow_A.glb",
+    "size": {
+      "width": 0.45,
+      "depth": 0.346,
+      "height": 0.138
+    },
+    "rawSize": {
+      "width": 0.65,
+      "depth": 0.5,
+      "height": 0.2
+    },
+    "rawMin": {
+      "x": -0.325,
+      "y": -0.1,
+      "z": -0.25
+    },
+    "scale": 0.6923
+  },
+  {
+    "id": "kaykit/pillow_B",
+    "name": "抱枕 B",
+    "category": "裝飾",
+    "styles": [
+      "可愛"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/pillow_B.glb",
+    "size": {
+      "width": 0.45,
+      "depth": 0.346,
+      "height": 0.138
+    },
+    "rawSize": {
+      "width": 0.65,
+      "depth": 0.5,
+      "height": 0.2
+    },
+    "rawMin": {
+      "x": -0.325,
+      "y": -0.1,
+      "z": -0.25
+    },
+    "scale": 0.6923
+  },
+  {
+    "id": "kaykit/rug_oval_A",
+    "name": "橢圓地毯 A",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_oval_A.glb",
+    "size": {
+      "width": 1.6,
+      "depth": 1.067,
+      "height": 0.053
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.5333
+  },
+  {
+    "id": "kaykit/rug_oval_B",
+    "name": "橢圓地毯 B",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_oval_B.glb",
+    "size": {
+      "width": 1.6,
+      "depth": 1.067,
+      "height": 0.053
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.5333
+  },
+  {
+    "id": "kaykit/rug_rectangle_A",
+    "name": "長方地毯 A",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_rectangle_A.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.333,
+      "height": 0.067
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/rug_rectangle_B",
+    "name": "長方地毯 B",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_rectangle_B.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.333,
+      "height": 0.067
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/rug_rectangle_stripes_A",
+    "name": "條紋地毯 A",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_rectangle_stripes_A.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.333,
+      "height": 0.067
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/rug_rectangle_stripes_B",
+    "name": "條紋地毯 B",
+    "category": "地毯",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/rug_rectangle_stripes_B.glb",
+    "size": {
+      "width": 2,
+      "depth": 1.333,
+      "height": 0.067
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 0.1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6667
+  },
+  {
+    "id": "kaykit/shelf_A_big",
+    "name": "層架 A（大）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_A_big.glb",
+    "size": {
+      "width": 1,
+      "depth": 0.25,
+      "height": 0.2
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 0.5,
+      "height": 0.4
+    },
+    "rawMin": {
+      "x": -1,
+      "y": -0.3,
+      "z": 0
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/shelf_A_small",
+    "name": "層架 A（小）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_A_small.glb",
+    "size": {
+      "width": 0.6,
+      "depth": 0.3,
+      "height": 0.24
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 0.5,
+      "height": 0.4
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": -0.3,
+      "z": 0
+    },
+    "scale": 0.6
+  },
+  {
+    "id": "kaykit/shelf_B_large",
+    "name": "書架 B（大）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_B_large.glb",
+    "size": {
+      "width": 1,
+      "depth": 0.25,
+      "height": 0.2
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 0.5,
+      "height": 0.4
+    },
+    "rawMin": {
+      "x": -1,
+      "y": -0.1,
+      "z": 0
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/shelf_B_large_decorated",
+    "name": "書架 B（大，擺飾）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_B_large_decorated.glb",
+    "size": {
+      "width": 1,
+      "depth": 0.25,
+      "height": 0.409
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 0.5,
+      "height": 0.818
+    },
+    "rawMin": {
+      "x": -1,
+      "y": -0.1,
+      "z": 0
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "kaykit/shelf_B_small",
+    "name": "書架 B（小）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_B_small.glb",
+    "size": {
+      "width": 0.6,
+      "depth": 0.3,
+      "height": 0.24
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 0.5,
+      "height": 0.4
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": -0.1,
+      "z": 0
+    },
+    "scale": 0.6
+  },
+  {
+    "id": "kaykit/shelf_B_small_decorated",
+    "name": "書架 B（小，擺飾）",
+    "category": "櫃",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/shelf_B_small_decorated.glb",
+    "size": {
+      "width": 0.6,
+      "depth": 0.343,
+      "height": 0.607
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 0.571,
+      "height": 1.012
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": -0.1,
+      "z": 0
+    },
+    "scale": 0.6
+  },
+  {
+    "id": "kaykit/table_low",
+    "name": "矮茶几",
+    "category": "桌",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/table_low.glb",
+    "size": {
+      "width": 1,
+      "depth": 0.625,
+      "height": 0.208
+    },
+    "rawSize": {
+      "width": 2.4,
+      "depth": 1.5,
+      "height": 0.5
+    },
+    "rawMin": {
+      "x": -1.2,
+      "y": 0,
+      "z": -0.75
+    },
+    "scale": 0.4167
+  },
+  {
+    "id": "kaykit/table_medium",
+    "name": "方桌",
+    "category": "桌",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/table_medium.glb",
+    "size": {
+      "width": 1.2,
+      "depth": 1.2,
+      "height": 0.6
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 2,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -1,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6
+  },
+  {
+    "id": "kaykit/table_medium_long",
+    "name": "長餐桌",
+    "category": "桌",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/table_medium_long.glb",
+    "size": {
+      "width": 1.8,
+      "depth": 1.2,
+      "height": 0.6
+    },
+    "rawSize": {
+      "width": 3,
+      "depth": 2,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -1.5,
+      "y": 0,
+      "z": -1
+    },
+    "scale": 0.6
+  },
+  {
+    "id": "kaykit/table_small",
+    "name": "小邊桌",
+    "category": "桌",
+    "styles": [
+      "可愛",
+      "北歐"
+    ],
+    "source": "KayKit Furniture Bits",
+    "license": "CC0 1.0",
+    "file": "/models/kaykit/table_small.glb",
+    "size": {
+      "width": 0.5,
+      "depth": 0.5,
+      "height": 0.5
+    },
+    "rawSize": {
+      "width": 1,
+      "depth": 1,
+      "height": 1
+    },
+    "rawMin": {
+      "x": -0.5,
+      "y": 0,
+      "z": -0.5
+    },
+    "scale": 0.5
+  },
+  {
+    "id": "polyhaven/ArmChair_01",
+    "name": "經典扶手椅",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "古典"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/ArmChair_01.glb",
+    "size": {
+      "width": 0.848,
+      "depth": 0.766,
+      "height": 1.065
+    },
+    "rawSize": {
+      "width": 0.848,
+      "depth": 0.766,
+      "height": 1.065
+    },
+    "rawMin": {
+      "x": -0.424,
+      "y": 0,
+      "z": -0.417
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/ClassicNightstand_01",
+    "name": "經典床頭櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "古典"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/ClassicNightstand_01.glb",
+    "size": {
+      "width": 0.568,
+      "depth": 0.424,
+      "height": 0.7
+    },
+    "rawSize": {
+      "width": 0.568,
+      "depth": 0.424,
+      "height": 0.7
+    },
+    "rawMin": {
+      "x": -0.284,
+      "y": 0,
+      "z": -0.212
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/CoffeeTable_01",
+    "name": "木頭茶几",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "北歐"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/CoffeeTable_01.glb",
+    "size": {
+      "width": 1.54,
+      "depth": 0.973,
+      "height": 0.523
+    },
+    "rawSize": {
+      "width": 1.54,
+      "depth": 0.973,
+      "height": 0.523
+    },
+    "rawMin": {
+      "x": -0.77,
+      "y": 0.002,
+      "z": -0.486
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/GothicBed_01",
+    "name": "歌德式雙人床",
+    "category": "床",
+    "styles": [
+      "寫實",
+      "古典"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/GothicBed_01.glb",
+    "size": {
+      "width": 1.494,
+      "depth": 2.04,
+      "height": 1.534
+    },
+    "rawSize": {
+      "width": 1.494,
+      "depth": 2.04,
+      "height": 1.534
+    },
+    "rawMin": {
+      "x": -0.711,
+      "y": 0,
+      "z": -1.053
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/Ottoman_01",
+    "name": "腳凳",
+    "category": "椅",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/Ottoman_01.glb",
+    "size": {
+      "width": 0.885,
+      "depth": 0.621,
+      "height": 0.624
+    },
+    "rawSize": {
+      "width": 0.885,
+      "depth": 0.621,
+      "height": 0.624
+    },
+    "rawMin": {
+      "x": -0.44,
+      "y": 0,
+      "z": -0.31
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/SchoolDesk_01",
+    "name": "學生書桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "復古"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/SchoolDesk_01.glb",
+    "size": {
+      "width": 0.712,
+      "depth": 0.546,
+      "height": 0.883
+    },
+    "rawSize": {
+      "width": 0.712,
+      "depth": 0.546,
+      "height": 0.883
+    },
+    "rawMin": {
+      "x": -0.356,
+      "y": 0,
+      "z": -0.278
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/Shelf_01",
+    "name": "開放層架",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/Shelf_01.glb",
+    "size": {
+      "width": 1.003,
+      "depth": 0.257,
+      "height": 2.08
+    },
+    "rawSize": {
+      "width": 1.003,
+      "depth": 0.257,
+      "height": 2.08
+    },
+    "rawMin": {
+      "x": -0.502,
+      "y": 0,
+      "z": 0
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/Sofa_01",
+    "name": "布面雙人沙發",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/Sofa_01.glb",
+    "size": {
+      "width": 1.571,
+      "depth": 0.658,
+      "height": 0.797
+    },
+    "rawSize": {
+      "width": 1.571,
+      "depth": 0.658,
+      "height": 0.797
+    },
+    "rawMin": {
+      "x": -0.778,
+      "y": -0.001,
+      "z": -0.361
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/bar_chair_round_01",
+    "name": "圓形吧台椅",
+    "category": "椅",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/bar_chair_round_01.glb",
+    "size": {
+      "width": 0.483,
+      "depth": 0.486,
+      "height": 0.751
+    },
+    "rawSize": {
+      "width": 0.483,
+      "depth": 0.486,
+      "height": 0.751
+    },
+    "rawMin": {
+      "x": -0.229,
+      "y": 0,
+      "z": -0.244
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/chinese_armchair",
+    "name": "中式官帽椅",
+    "category": "椅",
+    "styles": [
+      "寫實",
+      "中式"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/chinese_armchair.glb",
+    "size": {
+      "width": 0.848,
+      "depth": 0.789,
+      "height": 1.587
+    },
+    "rawSize": {
+      "width": 0.848,
+      "depth": 0.789,
+      "height": 1.587
+    },
+    "rawMin": {
+      "x": -0.423,
+      "y": 0,
+      "z": -0.388
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/chinese_tea_table",
+    "name": "中式茶几",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "中式"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/chinese_tea_table.glb",
+    "size": {
+      "width": 0.841,
+      "depth": 0.836,
+      "height": 0.499
+    },
+    "rawSize": {
+      "width": 0.841,
+      "depth": 0.836,
+      "height": 0.499
+    },
+    "rawMin": {
+      "x": -0.422,
+      "y": 0,
+      "z": -0.418
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/coffee_table_round_01",
+    "name": "圓形茶几",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/coffee_table_round_01.glb",
+    "size": {
+      "width": 1.301,
+      "depth": 1.301,
+      "height": 0.491
+    },
+    "rawSize": {
+      "width": 1.301,
+      "depth": 1.301,
+      "height": 0.491
+    },
+    "rawMin": {
+      "x": -0.651,
+      "y": -0.001,
+      "z": -0.651
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/dining_chair_02",
+    "name": "餐椅",
+    "category": "椅",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/dining_chair_02.glb",
+    "size": {
+      "width": 0.434,
+      "depth": 0.576,
+      "height": 0.973
+    },
+    "rawSize": {
+      "width": 0.434,
+      "depth": 0.576,
+      "height": 0.973
+    },
+    "rawMin": {
+      "x": -0.217,
+      "y": 0.001,
+      "z": -0.331
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/dining_table",
+    "name": "長餐桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "工業"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/dining_table.glb",
+    "size": {
+      "width": 2.256,
+      "depth": 1.39,
+      "height": 0.877
+    },
+    "rawSize": {
+      "width": 2.256,
+      "depth": 1.39,
+      "height": 0.877
+    },
+    "rawMin": {
+      "x": -1.133,
+      "y": -0.004,
+      "z": -0.678
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/drawer_cabinet",
+    "name": "抽屜櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "工業"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/drawer_cabinet.glb",
+    "size": {
+      "width": 1.141,
+      "depth": 0.488,
+      "height": 1.881
+    },
+    "rawSize": {
+      "width": 1.141,
+      "depth": 0.488,
+      "height": 1.881
+    },
+    "rawMin": {
+      "x": -0.571,
+      "y": 0,
+      "z": -0.248
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/metal_office_desk",
+    "name": "金屬辦公桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "工業"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/metal_office_desk.glb",
+    "size": {
+      "width": 2,
+      "depth": 0.947,
+      "height": 0.788
+    },
+    "rawSize": {
+      "width": 2,
+      "depth": 0.947,
+      "height": 0.788
+    },
+    "rawMin": {
+      "x": -1,
+      "y": 0,
+      "z": -0.469
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/mid_century_lounge_chair",
+    "name": "中世紀躺椅",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "復古"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/mid_century_lounge_chair.glb",
+    "size": {
+      "width": 1.009,
+      "depth": 1.19,
+      "height": 1.169
+    },
+    "rawSize": {
+      "width": 1.009,
+      "depth": 1.19,
+      "height": 1.169
+    },
+    "rawMin": {
+      "x": -0.504,
+      "y": 0,
+      "z": -0.661
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/modern_arm_chair_01",
+    "name": "現代扶手椅",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/modern_arm_chair_01.glb",
+    "size": {
+      "width": 0.82,
+      "depth": 0.987,
+      "height": 1.023
+    },
+    "rawSize": {
+      "width": 0.82,
+      "depth": 0.987,
+      "height": 1.023
+    },
+    "rawMin": {
+      "x": -0.407,
+      "y": 0,
+      "z": -0.575
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/modern_coffee_table_01",
+    "name": "現代長茶几",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/modern_coffee_table_01.glb",
+    "size": {
+      "width": 0.6,
+      "depth": 1.202,
+      "height": 0.39
+    },
+    "rawSize": {
+      "width": 0.6,
+      "depth": 1.202,
+      "height": 0.39
+    },
+    "rawMin": {
+      "x": -0.3,
+      "y": 0,
+      "z": -0.601
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/modern_coffee_table_02",
+    "name": "現代方茶几",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/modern_coffee_table_02.glb",
+    "size": {
+      "width": 1.199,
+      "depth": 1.2,
+      "height": 0.369
+    },
+    "rawSize": {
+      "width": 1.199,
+      "depth": 1.2,
+      "height": 0.369
+    },
+    "rawMin": {
+      "x": -0.599,
+      "y": 0,
+      "z": -0.597
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/modern_wooden_cabinet",
+    "name": "現代電視櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "現代",
+      "北歐"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/modern_wooden_cabinet.glb",
+    "size": {
+      "width": 2.44,
+      "depth": 0.52,
+      "height": 0.68
+    },
+    "rawSize": {
+      "width": 2.44,
+      "depth": 0.52,
+      "height": 0.68
+    },
+    "rawMin": {
+      "x": -1.22,
+      "y": 0,
+      "z": -0.27
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/old_bed_frame",
+    "name": "鐵架單人床",
+    "category": "床",
+    "styles": [
+      "寫實",
+      "工業"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/old_bed_frame.glb",
+    "size": {
+      "width": 0.905,
+      "depth": 2.002,
+      "height": 1.201
+    },
+    "rawSize": {
+      "width": 0.905,
+      "depth": 2.002,
+      "height": 1.201
+    },
+    "rawMin": {
+      "x": -0.448,
+      "y": 0,
+      "z": -0.998
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/ornate_mirror_01",
+    "name": "雕花鏡子",
+    "category": "裝飾",
+    "styles": [
+      "寫實",
+      "古典"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/ornate_mirror_01.glb",
+    "size": {
+      "width": 0.486,
+      "depth": 0.026,
+      "height": 0.744
+    },
+    "rawSize": {
+      "width": 0.486,
+      "depth": 0.026,
+      "height": 0.744
+    },
+    "rawMin": {
+      "x": -0.243,
+      "y": -0.411,
+      "z": 0
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/painted_wooden_cabinet",
+    "name": "彩繪矮櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "鄉村"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/painted_wooden_cabinet.glb",
+    "size": {
+      "width": 1.195,
+      "depth": 0.617,
+      "height": 1.182
+    },
+    "rawSize": {
+      "width": 1.195,
+      "depth": 0.617,
+      "height": 1.182
+    },
+    "rawMin": {
+      "x": -0.595,
+      "y": 0,
+      "z": -0.282
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/painted_wooden_nightstand",
+    "name": "彩繪床頭櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "鄉村"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/painted_wooden_nightstand.glb",
+    "size": {
+      "width": 0.505,
+      "depth": 0.509,
+      "height": 0.616
+    },
+    "rawSize": {
+      "width": 0.505,
+      "depth": 0.509,
+      "height": 0.616
+    },
+    "rawMin": {
+      "x": -0.253,
+      "y": 0,
+      "z": -0.249
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/round_wooden_table_02",
+    "name": "小圓木桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "北歐"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/round_wooden_table_02.glb",
+    "size": {
+      "width": 0.796,
+      "depth": 0.796,
+      "height": 0.746
+    },
+    "rawSize": {
+      "width": 0.796,
+      "depth": 0.796,
+      "height": 0.746
+    },
+    "rawMin": {
+      "x": -0.398,
+      "y": 0,
+      "z": -0.398
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/side_table_01",
+    "name": "邊桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/side_table_01.glb",
+    "size": {
+      "width": 0.55,
+      "depth": 0.45,
+      "height": 0.551
+    },
+    "rawSize": {
+      "width": 0.55,
+      "depth": 0.45,
+      "height": 0.551
+    },
+    "rawMin": {
+      "x": -0.275,
+      "y": -0.002,
+      "z": -0.225
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/side_table_tall_01",
+    "name": "高邊桌",
+    "category": "桌",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/side_table_tall_01.glb",
+    "size": {
+      "width": 0.384,
+      "depth": 0.384,
+      "height": 0.761
+    },
+    "rawSize": {
+      "width": 0.384,
+      "depth": 0.384,
+      "height": 0.761
+    },
+    "rawMin": {
+      "x": -0.192,
+      "y": 0,
+      "z": -0.192
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/sofa_02",
+    "name": "灰色三人沙發",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "現代",
+      "北歐"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/sofa_02.glb",
+    "size": {
+      "width": 1.807,
+      "depth": 0.818,
+      "height": 0.709
+    },
+    "rawSize": {
+      "width": 1.807,
+      "depth": 0.818,
+      "height": 0.709
+    },
+    "rawMin": {
+      "x": -0.903,
+      "y": 0,
+      "z": -0.478
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/sofa_03",
+    "name": "大型 L 沙發",
+    "category": "沙發",
+    "styles": [
+      "寫實",
+      "現代"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/sofa_03.glb",
+    "size": {
+      "width": 2.731,
+      "depth": 0.925,
+      "height": 1.118
+    },
+    "rawSize": {
+      "width": 2.731,
+      "depth": 0.925,
+      "height": 1.118
+    },
+    "rawMin": {
+      "x": -1.366,
+      "y": 0.001,
+      "z": -0.464
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/vintage_day_bed",
+    "name": "復古臥榻",
+    "category": "床",
+    "styles": [
+      "寫實",
+      "復古"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/vintage_day_bed.glb",
+    "size": {
+      "width": 1.973,
+      "depth": 0.855,
+      "height": 1.127
+    },
+    "rawSize": {
+      "width": 1.973,
+      "depth": 0.855,
+      "height": 1.127
+    },
+    "rawMin": {
+      "x": -0.986,
+      "y": 0,
+      "z": -0.469
+    },
+    "scale": 1
+  },
+  {
+    "id": "polyhaven/wooden_bookshelf_worn",
+    "name": "舊木書櫃",
+    "category": "櫃",
+    "styles": [
+      "寫實",
+      "鄉村"
+    ],
+    "source": "Poly Haven",
+    "license": "CC0 1.0",
+    "file": "/models/polyhaven/wooden_bookshelf_worn.glb",
+    "size": {
+      "width": 1.374,
+      "depth": 0.581,
+      "height": 2.063
+    },
+    "rawSize": {
+      "width": 1.374,
+      "depth": 0.581,
+      "height": 2.063
+    },
+    "rawMin": {
+      "x": -0.687,
+      "y": 0,
+      "z": -0.291
+    },
+    "scale": 1
+  }
+]
