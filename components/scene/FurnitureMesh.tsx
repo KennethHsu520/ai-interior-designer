@@ -1,10 +1,12 @@
 'use client'
 
-import { Component, Suspense, useMemo, useRef, type ReactNode } from 'react'
+import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { Edges, useGLTF } from '@react-three/drei'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useRoomStore } from '@/store/useRoomStore'
+import { furnitureColors, furnitureDims } from '@/lib/catalog'
+import { buildProcedural } from '@/lib/proceduralThree'
 import type { CatalogItem, PlacedFurniture } from '@/types/room'
 
 type Capturable = { setPointerCapture: (id: number) => void; releasePointerCapture: (id: number) => void }
@@ -19,7 +21,7 @@ class ModelBoundary extends Component<{ fallback: ReactNode; children: ReactNode
   }
 }
 
-function Model({ item }: { item: CatalogItem }) {
+function Model({ item, stretch, tint }: { item: CatalogItem; stretch: [number, number, number]; tint?: string }) {
   const { scene } = useGLTF(item.file)
   const cloned = useMemo(() => {
     const c = scene.clone(true)
@@ -28,19 +30,40 @@ function Model({ item }: { item: CatalogItem }) {
       if (m.isMesh) {
         m.castShadow = true
         m.receiveShadow = true
+        if (tint) {
+          const mats = Array.isArray(m.material) ? m.material : [m.material]
+          const next = mats.map((mat) => {
+            const cm = (mat as THREE.MeshStandardMaterial).clone()
+            if (cm.color) cm.color.set(tint)
+            return cm
+          })
+          m.material = Array.isArray(m.material) ? next : next[0]
+        }
       }
     })
     return c
-  }, [scene])
+  }, [scene, tint])
   const s = item.scale
   return (
-    <group
-      scale={s}
-      position={[-(item.rawMin.x + item.rawSize.width / 2) * s, -item.rawMin.y * s, -(item.rawMin.z + item.rawSize.depth / 2) * s]}
-    >
-      <primitive object={cloned} />
+    <group scale={stretch}>
+      <group
+        scale={s}
+        position={[-(item.rawMin.x + item.rawSize.width / 2) * s, -item.rawMin.y * s, -(item.rawMin.z + item.rawSize.depth / 2) * s]}
+      >
+        <primitive object={cloned} />
+      </group>
     </group>
   )
+}
+
+function ProceduralModel({ kind, size, colors }: { kind: string; size: { width: number; depth: number; height: number }; colors: Record<string, string> }) {
+  const key = JSON.stringify([size, colors])
+  const group = useMemo(() => {
+    const [sz, col] = JSON.parse(key)
+    return buildProcedural(kind, sz, col)
+  }, [kind, key])
+  useEffect(() => () => group.userData.dispose?.(), [group])
+  return <primitive object={group} />
 }
 
 function Placeholder({ item }: { item: CatalogItem }) {
@@ -57,9 +80,13 @@ const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture; item: CatalogItem; invalid: boolean }) {
   const selected = useRoomStore((s) => s.selectedFurnitureId === f.id)
   const drag = useRef<{ dx: number; dz: number } | null>(null)
-  const w = item.size.width * f.scale
-  const d = item.size.depth * f.scale
-  const h = item.size.height * f.scale
+  const dims = furnitureDims(f, item)
+  const w = dims.width
+  const d = dims.depth
+  const h = dims.height
+  const base = f.size ?? item.size
+  const stretch: [number, number, number] = [base.width / item.size.width, base.height / item.size.height, base.depth / item.size.depth]
+  const colors = furnitureColors(f, item)
 
   const hit = (e: ThreeEvent<PointerEvent>) => e.ray.intersectPlane(floorPlane, new THREE.Vector3())
 
@@ -92,11 +119,15 @@ export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture
   return (
     <group position={[f.position.x, f.position.y, f.position.z]} rotation={[0, f.rotationY, 0]}>
       <group scale={f.scale} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
-        <ModelBoundary fallback={<Placeholder item={item} />}>
-          <Suspense fallback={<Placeholder item={item} />}>
-            <Model item={item} />
-          </Suspense>
-        </ModelBoundary>
+        {item.procedural ? (
+          <ProceduralModel kind={item.procedural.kind} size={base} colors={colors} />
+        ) : (
+          <ModelBoundary fallback={<Placeholder item={item} />}>
+            <Suspense fallback={<Placeholder item={item} />}>
+              <Model item={item} stretch={stretch} tint={f.colors?.main} />
+            </Suspense>
+          </ModelBoundary>
+        )}
       </group>
       {(invalid || selected) && (
         <mesh position={[0, h / 2 + 0.005, 0]} raycast={() => null}>

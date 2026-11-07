@@ -1,7 +1,8 @@
 'use client'
 
 import { allWallsConfirmed, useRoomStore } from '@/store/useRoomStore'
-import { bbox, isRectangle, MIN_WALL, scaleFloor, validateFloor, validateHeight, wallLengths } from '@/lib/geometry'
+import { bbox, cornerAngles, formatAngle, isRectangle, MIN_WALL, scaleFloor, validateFloor, validateHeight, wallLengths } from '@/lib/geometry'
+import { locksOf, solveFloor } from '@/lib/floorSolver'
 import { itemTypeInfo } from '@/types/room'
 import NumberField from '@/components/ui/NumberField'
 
@@ -15,22 +16,26 @@ export default function RoomSizePanel() {
   const setFloorEditorOpen = useRoomStore((s) => s.setFloorEditorOpen)
   const removeCeilingItem = useRoomStore((s) => s.removeCeilingItem)
   const setStage = useRoomStore((s) => s.setStage)
+  const setFloor = useRoomStore((s) => s.setFloor)
 
   const b = bbox(room.floor)
   const rect = isRectangle(room.floor)
   const lengths = wallLengths(room.floor)
+  const angles = cornerAngles(room.floor)
+  const locks = locksOf(room.walls, room.floor.length)
+  const solveLength = (i: number, v: number) => solveFloor(room.floor, { kind: 'length', index: i, value: v }, locks)
   const errors = validateFloor(room.floor)
   const confirmedCount = room.walls.filter((w) => w.confirmed).length
   const ready = allWallsConfirmed(room) && errors.length === 0
 
   const checkWidth = (v: number) => {
-    if (v <= MIN_WALL) return `需大於 ${MIN_WALL}m`
+    if (v <= MIN_WALL) return '需大於 0'
     if (v > 30) return '太大了'
     const errs = validateFloor(scaleFloor(room.floor, v, b.depth))
     return errs[0] ?? null
   }
   const checkDepth = (v: number) => {
-    if (v <= MIN_WALL) return `需大於 ${MIN_WALL}m`
+    if (v <= MIN_WALL) return '需大於 0'
     if (v > 30) return '太大了'
     const errs = validateFloor(scaleFloor(room.floor, b.width, v))
     return errs[0] ?? null
@@ -86,27 +91,41 @@ export default function RoomSizePanel() {
             {confirmedCount}/{room.walls.length}
           </span>
         </div>
-        <p className="text-xs text-slate-500">在 3D 畫面點一面牆，或從下面選擇。</p>
+        <p className="text-xs text-slate-500">在 3D 畫面點一面牆，或從下面選擇。長度可直接在這裡修改。</p>
         <ul className="flex flex-col gap-1.5">
           {room.walls.map((w, i) => (
-            <li key={w.id}>
-              <button
-                onClick={() => selectWall(i)}
-                className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm hover:border-sky-300 hover:bg-sky-50"
-              >
-                <span className="font-medium text-slate-700">
-                  牆 {i + 1}
-                  <span className="ml-2 text-xs font-normal tabular-nums text-slate-400">{lengths[i].toFixed(2)} m</span>
-                </span>
-                <span className="flex items-center gap-1.5 text-xs">
-                  {w.photoUrl && <span title="已拍照">📷</span>}
-                  {w.items.length > 0 && <span className="text-slate-500">{w.items.length} 件</span>}
-                  {w.confirmed ? (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700">已確認</span>
-                  ) : (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700">待確認</span>
-                  )}
-                </span>
+            <li key={w.id} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:border-sky-300 hover:bg-sky-50">
+              <button onClick={() => selectWall(i)} className="shrink-0 text-left text-sm font-medium text-slate-700">
+                牆 {i + 1}
+              </button>
+              <div className="w-24 shrink-0">
+                <NumberField
+                  key={`${w.id}-${room.floor.length}`}
+                  compact
+                  value={lengths[i]}
+                  disabled={locks.lengths[i]}
+                  suffix={locks.lengths[i] ? '🔒' : 'm'}
+                  validate={(v) => {
+                    const r = solveLength(i, v)
+                    return 'error' in r ? r.error : null
+                  }}
+                  onCommit={(v) => {
+                    const r = solveLength(i, v)
+                    if ('floor' in r) setFloor(r.floor)
+                  }}
+                />
+              </div>
+              <span className="shrink-0 text-[11px] tabular-nums text-slate-400" title={`牆 ${i + 1} 與牆 ${((i + 1) % room.walls.length) + 1} 的夾角`}>
+                ∠{formatAngle(angles[(i + 1) % angles.length])}
+              </span>
+              <button onClick={() => selectWall(i)} className="flex flex-1 items-center justify-end gap-1.5 text-xs">
+                {w.photoUrl && <span title="已拍照">📷</span>}
+                {w.items.length > 0 && <span className="text-slate-500">{w.items.length} 件</span>}
+                {w.confirmed ? (
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700">已確認</span>
+                ) : (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700">待確認</span>
+                )}
               </button>
             </li>
           ))}

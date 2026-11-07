@@ -7,6 +7,7 @@ import { validateFloor } from '@/lib/geometry'
 import { CATALOG_MAP } from '@/lib/catalog'
 import { exportRoom, importRoom } from '@/lib/io'
 import RoomScene from './scene/RoomScene'
+import ViewControls from './scene/ViewControls'
 import { screenToFloor } from './scene/bridge'
 import RoomSizePanel from './panels/RoomSizePanel'
 import FloorPlanEditor from './panels/FloorPlanEditor'
@@ -131,12 +132,13 @@ export default function Editor() {
       <main className="relative flex min-h-0 flex-1 flex-col md:flex-row">
         <div className="relative min-h-0 flex-1" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
           <RoomScene />
+          <ViewControls />
           <div className="pointer-events-none absolute left-3 top-3 max-w-[70%] rounded-lg bg-white/85 px-3 py-1.5 text-[11px] text-slate-600 shadow backdrop-blur">
             {stage === 'room'
               ? selectedWall === null
-                ? '拖曳旋轉・滾輪／雙指縮放・點一面牆開始拍照'
+                ? '左鍵旋轉・右鍵平移・滾輪縮放・WASD 移動・點一面牆開始拍照'
                 : `正在編輯牆 ${selectedWall + 1}・可直接拖曳牆上的方塊`
-              : '拖曳家具移動・紅色代表穿牆、重疊或擋門'}
+              : '拖曳家具移動（會停在牆邊）・右鍵平移視角・WASD 移動・紅色代表重疊或擋門'}
           </div>
           <button
             onClick={() => setPanelOpen((o) => !o)}

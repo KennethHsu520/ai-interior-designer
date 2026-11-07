@@ -14,6 +14,8 @@ import {
   uid,
   wallSegment,
 } from '@/lib/geometry'
+import { CATALOG_MAP } from '@/lib/catalog'
+import { clampIntoRoom } from '@/lib/collision'
 
 export type Stage = 'room' | 'furniture'
 
@@ -54,6 +56,9 @@ type Actions = {
   setHoveredWall: (i: number | null) => void
   setDragging: (v: boolean) => void
   setFloorEditorOpen: (v: boolean) => void
+  setWallLock: (i: number, key: 'lengthLocked' | 'angleLocked', v: boolean) => void
+  setAllLocks: (v: boolean) => void
+  restoreLayout: (floor: Vec2[], walls: Room['walls']) => void
   setWallPhoto: (i: number, ref: string | undefined) => void
   setPhotoBounds: (i: number, bounds: PhotoBounds | undefined) => void
   setWallItems: (i: number, items: WallItem[]) => void
@@ -128,6 +133,9 @@ export const useRoomStore = create<State & Actions>()(
       setHoveredWall: (i) => set({ hoveredWall: i }),
       setDragging: (v) => set({ dragging: v }),
       setFloorEditorOpen: (v) => set({ floorEditorOpen: v }),
+      restoreLayout: (floor, walls) => set((s) => ({ room: { ...s.room, floor, walls }, selectedWall: null, selectedItemId: null })),
+      setAllLocks: (v) => set((s) => ({ room: { ...s.room, walls: s.room.walls.map((w) => ({ ...w, lengthLocked: v, angleLocked: v })) } })),
+      setWallLock: (i, key, v) => set((s) => ({ room: { ...s.room, walls: s.room.walls.map((w) => (w.index === i ? { ...w, [key]: v } : w)) } })),
       setWallPhoto: (i, ref) =>
         set((s) => ({ room: { ...s.room, walls: s.room.walls.map((w) => (w.index === i ? { ...w, photoUrl: ref, photoBounds: undefined } : w)) } })),
       setPhotoBounds: (i, bounds) =>
@@ -180,7 +188,16 @@ export const useRoomStore = create<State & Actions>()(
         }))
         return id
       },
-      updateFurniture: (id, patch) => set((s) => ({ furniture: s.furniture.map((f) => (f.id === id ? { ...f, ...patch } : f)) })),
+      updateFurniture: (id, patch) =>
+        set((s) => ({
+          furniture: s.furniture.map((f) => {
+            if (f.id !== id) return f
+            const next = { ...f, ...patch }
+            const item = CATALOG_MAP.get(next.catalogId)
+            if (!item || !('position' in patch || 'rotationY' in patch || 'scale' in patch || 'size' in patch)) return next
+            return { ...next, position: clampIntoRoom(s.room.floor, next, item, f.position) }
+          }),
+        })),
       removeFurniture: (id) =>
         set((s) => ({
           furniture: s.furniture.filter((f) => f.id !== id),

@@ -30,6 +30,8 @@ export type Wall = {
   photoUrl?: string
   photoBounds?: PhotoBounds
   confirmed?: boolean
+  lengthLocked?: boolean
+  angleLocked?: boolean
   items: WallItem[]
 }
 
@@ -50,6 +52,8 @@ export type PlacedFurniture = {
   position: { x: number; y: number; z: number }
   rotationY: number
   scale: number
+  size?: { width: number; depth: number; height: number }
+  colors?: Record<string, string>
 }
 
 export type CatalogItem = {
@@ -65,6 +69,7 @@ export type CatalogItem = {
   rawMin: { x: number; y: number; z: number }
   scale: number
   thumbnail?: string
+  procedural?: { kind: string; colors: Record<string, string> }
 }
 
 export type Placement = {

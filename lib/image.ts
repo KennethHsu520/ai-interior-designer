@@ -2,18 +2,64 @@ const DB_NAME = 'ai-interior-photos'
 const STORE = 'photos'
 export const PHOTO_PREFIX = 'idb:'
 
+type Decoded = { source: CanvasImageSource; width: number; height: number; close: () => void }
+
+function looksHeic(file: Blob) {
+  const name = file instanceof File ? file.name : ''
+  return /heic|heif/i.test(file.type) || /\.(heic|heif|hif)$/i.test(name)
+}
+
+async function heicToJpeg(file: Blob) {
+  const { heicTo } = await import('heic-to/next')
+  return heicTo({ blob: file, type: 'image/jpeg', quality: 0.92 })
+}
+
+async function decode(file: Blob): Promise<Decoded> {
+  if (looksHeic(file)) {
+    try {
+      return await decodeNative(await heicToJpeg(file))
+    } catch {}
+  }
+  try {
+    return await decodeNative(file)
+  } catch {
+    if (looksHeic(file)) throw new Error('decode')
+    return decodeNative(await heicToJpeg(file))
+  }
+}
+
+async function decodeNative(file: Blob): Promise<Decoded> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    return { source: bitmap, width: bitmap.width, height: bitmap.height, close: () => bitmap.close() }
+  } catch {
+    const url = URL.createObjectURL(file)
+    try {
+      const img = new Image()
+      img.src = url
+      await img.decode()
+      return { source: img, width: img.naturalWidth, height: img.naturalHeight, close: () => URL.revokeObjectURL(url) }
+    } catch {
+      URL.revokeObjectURL(url)
+      throw new Error('decode')
+    }
+  }
+}
+
 export async function compressImage(file: Blob, maxSide = 1600, quality = 0.85): Promise<string> {
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height))
-  const w = Math.round(bitmap.width * scale)
-  const h = Math.round(bitmap.height * scale)
+  const img = await decode(file)
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height))
+  const w = Math.max(1, Math.round(img.width * scale))
+  const h = Math.max(1, Math.round(img.height * scale))
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('無法建立畫布')
-  ctx.drawImage(bitmap, 0, 0, w, h)
-  bitmap.close()
+  if (!ctx) throw new Error('canvas')
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, w, h)
+  ctx.drawImage(img.source, 0, 0, w, h)
+  img.close()
   return canvas.toDataURL('image/jpeg', quality)
 }
 

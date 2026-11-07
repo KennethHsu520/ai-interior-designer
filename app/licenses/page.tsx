@@ -26,6 +26,13 @@ const SOURCES = [
     license: 'CC0 1.0（公眾領域）',
     note: '簡約風格家具。將 GLB 放入 public/models/kenney/ 後執行 npm run catalog 即會加入目錄。',
   },
+  {
+    name: '本站自製（程式生成）',
+    author: 'AI室內設計師',
+    url: '/',
+    license: 'CC0 1.0（公眾領域）',
+    note: '以程式碼即時產生的參數化家具，尺寸與顏色都可以自由調整。',
+  },
 ]
 
 export default function LicensesPage() {

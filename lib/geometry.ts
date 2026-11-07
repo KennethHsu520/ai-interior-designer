@@ -1,6 +1,6 @@
 import type { Vec2, Wall, WallItem } from '@/types/room'
 
-export const MIN_WALL = 0.5
+export const MIN_WALL = 0.01
 export const MIN_HEIGHT = 2
 export const MAX_HEIGHT = 5
 
@@ -114,10 +114,10 @@ export function validateFloor(poly: Vec2[]): string[] {
   if (poly.length < 3) errors.push('至少需要 3 個頂點')
   const lens = wallLengths(poly)
   lens.forEach((l, i) => {
-    if (l < MIN_WALL - 1e-6) errors.push(`第 ${i + 1} 面牆長度 ${l.toFixed(2)}m，需大於 ${MIN_WALL}m`)
+    if (l < MIN_WALL - 1e-6) errors.push(`第 ${i + 1} 面牆長度至少要 1 公分`)
   })
   if (isSelfIntersecting(poly)) errors.push('格局不可自我交叉')
-  if (Math.abs(signedArea(poly)) < 0.25) errors.push('房間面積太小')
+  if (Math.abs(signedArea(poly)) < 0.01) errors.push('房間面積太小')
   return errors
 }
 
@@ -175,7 +175,7 @@ export function splitWall(floor: Vec2[], walls: Wall[], wallIndex: number, t: nu
   const newFloor = [...floor.slice(0, wallIndex + 1), mid, ...floor.slice(wallIndex + 1)]
   const splitAt = s.length * t
   const original = walls[wallIndex]
-  const first: Wall = { ...original, items: original.items.filter((it) => it.offset + it.width / 2 < splitAt), confirmed: false, photoUrl: undefined }
+  const first: Wall = { ...original, lengthLocked: false, items: original.items.filter((it) => it.offset + it.width / 2 < splitAt), confirmed: false, photoUrl: undefined }
   const second: Wall = {
     id: uid('wall'),
     index: wallIndex + 1,
@@ -194,6 +194,7 @@ export function removeVertex(floor: Vec2[], walls: Wall[], vertexIndex: number) 
   const prevLen = wallSegment(floor, prevWall).length
   const merged: Wall = {
     ...walls[prevWall],
+    lengthLocked: false,
     items: [...walls[prevWall].items, ...walls[curWall].items.map((it) => ({ ...it, offset: it.offset + prevLen }))],
     confirmed: false,
     photoUrl: undefined,
@@ -222,4 +223,76 @@ export function scaleWalls(oldFloor: Vec2[], newFloor: Vec2[], walls: Wall[], ol
       ),
     }
   })
+}
+
+function turnAt(floor: Vec2[], i: number) {
+  const n = floor.length
+  const prev = floor[(i - 1 + n) % n]
+  const cur = floor[i]
+  const next = floor[(i + 1) % n]
+  const d1 = { x: cur.x - prev.x, z: cur.z - prev.z }
+  const d2 = { x: next.x - cur.x, z: next.z - cur.z }
+  const sign = signedArea(floor) < 0 ? -1 : 1
+  const t = Math.atan2(d1.x * d2.z - d1.z * d2.x, d1.x * d2.x + d1.z * d2.z) * sign
+  return { d1, sign, t }
+}
+
+export function cornerAngle(floor: Vec2[], i: number) {
+  return 180 - (turnAt(floor, i).t * 180) / Math.PI
+}
+
+export function cornerAngles(floor: Vec2[]) {
+  return floor.map((_, i) => cornerAngle(floor, i))
+}
+
+export function formatAngle(deg: number) {
+  const r = Math.round(deg * 10) / 10
+  return Number.isInteger(r) ? `${r}°` : `${r.toFixed(1)}°`
+}
+
+export function cornerLabelPoint(floor: Vec2[], i: number, dist: number): Vec2 {
+  const n = floor.length
+  const prev = floor[(i - 1 + n) % n]
+  const cur = floor[i]
+  const next = floor[(i + 1) % n]
+  const a = { x: prev.x - cur.x, z: prev.z - cur.z }
+  const b = { x: next.x - cur.x, z: next.z - cur.z }
+  const la = Math.hypot(a.x, a.z) || 1
+  const lb = Math.hypot(b.x, b.z) || 1
+  let m = { x: a.x / la + b.x / lb, z: a.z / la + b.z / lb }
+  const lm = Math.hypot(m.x, m.z)
+  if (lm < 1e-6) {
+    const s = wallSegment(floor, i)
+    const sign = signedArea(floor) < 0 ? -1 : 1
+    m = { x: s.normal.x * sign, z: s.normal.z * sign }
+  } else {
+    m = { x: m.x / lm, z: m.z / lm }
+    if (cornerAngle(floor, i) > 180) m = { x: -m.x, z: -m.z }
+  }
+  return { x: cur.x + m.x * dist, z: cur.z + m.z * dist }
+}
+
+function intersectLines(p: Vec2, r: Vec2, q: Vec2, s: Vec2): Vec2 | null {
+  const c = r.x * s.z - r.z * s.x
+  if (Math.abs(c) < 1e-6) return null
+  const t = ((q.x - p.x) * s.z - (q.z - p.z) * s.x) / c
+  return { x: p.x + r.x * t, z: p.z + r.z * t }
+}
+
+export function moveWallParallel(floor: Vec2[], i: number, d: number): Vec2[] {
+  const n = floor.length
+  const s = wallSegment(floor, i)
+  const pa = { x: s.a.x + s.normal.x * d, z: s.a.z + s.normal.z * d }
+  const pb = { x: s.b.x + s.normal.x * d, z: s.b.z + s.normal.z * d }
+  const prev = wallSegment(floor, (i - 1 + n) % n)
+  const next = wallSegment(floor, (i + 1) % n)
+  const na = intersectLines(pa, s.dir, prev.a, prev.dir) ?? pa
+  const nb = intersectLines(pb, s.dir, next.b, next.dir) ?? pb
+  const r4 = (v: Vec2) => ({ x: Math.round(v.x * 10000) / 10000, z: Math.round(v.z * 10000) / 10000 })
+  return floor.map((v, k) => (k === i ? r4(na) : k === (i + 1) % n ? r4(nb) : v))
+}
+
+export function projectOnWall(floor: Vec2[], i: number, p: Vec2) {
+  const s = wallSegment(floor, i)
+  return (p.x - s.a.x) * s.dir.x + (p.z - s.a.z) * s.dir.z
 }

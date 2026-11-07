@@ -1,3 +1,4 @@
+import { furnitureDims } from './catalog'
 import type { CatalogItem, PlacedFurniture, Room } from '@/types/room'
 import { bbox, signedArea, wallPoint, wallSegment } from './geometry'
 import { resolveAll } from './collision'
@@ -46,9 +47,8 @@ export function heuristicLayout(room: Room, list: PlacedFurniture[], catalog: Ma
     for (let k = 0; k < walls.length; k++) {
       const w = walls[(wallPick + k) % walls.length]
       const used = cursor.get(w.i) ?? 0.1
-      const width = item.size.width * f.scale
-      const depth = item.size.depth * f.scale
-      const blocked = (w.wall?.items ?? []).filter((it) => it.type === 'door' || (it.type === 'window' && it.elevation < item.size.height))
+      const { width, depth } = furnitureDims(f, item)
+      const blocked = (w.wall?.items ?? []).filter((it) => it.type === 'door' || (it.type === 'window' && it.elevation < furnitureDims(f, item).height))
       let start = used
       for (const b of blocked.sort((a, c) => a.offset - c.offset)) {
         if (start + width > b.offset && start < b.offset + b.width) start = b.offset + b.width + 0.05

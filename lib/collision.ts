@@ -1,5 +1,6 @@
 import type { CatalogItem, PlacedFurniture, Room, Vec2 } from '@/types/room'
-import { pointInPolygon, segmentsIntersect, wallPoint, wallSegment } from './geometry'
+import { furnitureDims } from './catalog'
+import { isConvexVertex, pointInPolygon, segmentsIntersect, signedArea, wallPoint, wallSegment } from './geometry'
 
 export type OBB = { cx: number; cz: number; hw: number; hd: number; angle: number }
 
@@ -17,12 +18,13 @@ export function obbCorners(b: OBB): Vec2[] {
   ].map(([lx, lz]) => ({ x: b.cx + lx * c + lz * s, z: b.cz - lx * s + lz * c }))
 }
 
-export function furnitureOBB(f: Pick<PlacedFurniture, 'position' | 'rotationY' | 'scale'>, item: CatalogItem, shrink = EPS): OBB {
+export function furnitureOBB(f: Pick<PlacedFurniture, 'position' | 'rotationY' | 'scale' | 'size'>, item: CatalogItem, shrink = EPS): OBB {
+  const dims = furnitureDims(f, item)
   return {
     cx: f.position.x,
     cz: f.position.z,
-    hw: Math.max(0.005, (item.size.width * f.scale) / 2 - shrink),
-    hd: Math.max(0.005, (item.size.depth * f.scale) / 2 - shrink),
+    hw: Math.max(0.005, dims.width / 2 - shrink),
+    hd: Math.max(0.005, dims.depth / 2 - shrink),
     angle: f.rotationY,
   }
 }
@@ -184,4 +186,56 @@ export function resolveAll(room: Room, list: PlacedFurniture[], catalog: Map<str
 export function snapAngle(a: number, stepDeg = 15) {
   const step = (stepDeg * Math.PI) / 180
   return Math.round(a / step) * step
+}
+
+export function clampIntoRoom(floor: Vec2[], f: PlacedFurniture, item: CatalogItem, prev?: Vec2): PlacedFurniture['position'] {
+  const at = (x: number, z: number) => ({ ...f, position: { x, y: 0, z } })
+  const inside = (x: number, z: number) => obbInsideRoom(furnitureOBB(at(x, z), item), floor)
+  const r3 = (v: number) => Math.round(v * 1000) / 1000
+  if (inside(f.position.x, f.position.z)) return f.position
+  const n = floor.length
+  const sign = signedArea(floor) >= 0 ? 1 : -1
+  const convex = floor.map((_, i) => isConvexVertex(floor, i) === sign > 0)
+  let x = f.position.x
+  let z = f.position.z
+  for (let it = 0; it < 8; it++) {
+    let moved = false
+    for (let i = 0; i < n; i++) {
+      const s = wallSegment(floor, i)
+      const nx = s.normal.x * sign
+      const nz = s.normal.z * sign
+      const corners = obbCorners(furnitureOBB(at(x, z), item, 0))
+      const dims = furnitureDims(f, item)
+      const reach = Math.hypot(dims.width, dims.depth)
+      const lo = convex[i] ? -reach : 0
+      const hi = convex[(i + 1) % n] ? s.length + reach : s.length
+      let worst = 0
+      for (const c of corners) {
+        const cl = Math.hypot(c.x - x, c.z - z) || 1
+        if (pointInPolygon({ x: c.x - ((c.x - x) / cl) * 0.004, z: c.z - ((c.z - z) / cl) * 0.004 }, floor)) continue
+        const t = (c.x - s.a.x) * s.dir.x + (c.z - s.a.z) * s.dir.z
+        if (t < lo - 1e-6 || t > hi + 1e-6) continue
+        const d = (c.x - s.a.x) * nx + (c.z - s.a.z) * nz
+        if (d < worst && d > -reach) worst = d
+      }
+      if (worst < -1e-6) {
+        x -= nx * worst
+        z -= nz * worst
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+  if (inside(x, z)) return { x: r3(x), y: 0, z: r3(z) }
+  if (prev && inside(prev.x, prev.z)) {
+    let a = 0
+    let b = 1
+    for (let k = 0; k < 14; k++) {
+      const m = (a + b) / 2
+      if (inside(prev.x + (f.position.x - prev.x) * m, prev.z + (f.position.z - prev.z) * m)) a = m
+      else b = m
+    }
+    return { x: r3(prev.x + (f.position.x - prev.x) * a), y: 0, z: r3(prev.z + (f.position.z - prev.z) * a) }
+  }
+  return f.position
 }

@@ -64,6 +64,7 @@ export default function WallPhotoPanel() {
   const [busy, setBusy] = useState<null | 'photo' | 'ai'>(null)
   const [message, setMessage] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string } | null>(null)
   const [newType, setNewType] = useState<WallItemType>('outlet')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const photo = usePhoto(wall?.photoUrl)
 
   if (!wall || index === null) return null
@@ -76,19 +77,44 @@ export default function WallPhotoPanel() {
     if (!file) return
     setBusy('photo')
     setMessage(null)
+    setConfirmDelete(false)
+    let dataUrl: string
     try {
-      const dataUrl = await compressImage(file)
-      await deletePhoto(wall.photoUrl)
+      dataUrl = await compressImage(file)
+    } catch (e) {
+      console.error(e)
+      setMessage({
+        kind: 'error',
+        text: `無法讀取這個檔案（${file.name}），檔案可能已損毀或不是圖片。`,
+      })
+      setBusy(null)
+      if (cameraInput.current) cameraInput.current.value = ''
+      if (galleryInput.current) galleryInput.current.value = ''
+      return
+    }
+    try {
+      const old = wall.photoUrl
       const ref = await savePhoto(`wall_${wall.id}_${Date.now()}`, dataUrl)
       setWallPhoto(index, ref)
+      await deletePhoto(old)
       setMessage({ kind: 'ok', text: '照片已儲存，可以按「AI 辨識」了。' })
-    } catch {
-      setMessage({ kind: 'error', text: '照片處理失敗，請換一張試試。' })
+    } catch (e) {
+      console.error(e)
+      setMessage({ kind: 'error', text: '照片儲存失敗，可能是瀏覽器儲存空間不足或停用了網站資料。' })
     } finally {
       setBusy(null)
       if (cameraInput.current) cameraInput.current.value = ''
       if (galleryInput.current) galleryInput.current.value = ''
     }
+  }
+
+  const removePhoto = async () => {
+    if (!wall.photoUrl) return
+    const old = wall.photoUrl
+    setConfirmDelete(false)
+    setWallPhoto(index, undefined)
+    await deletePhoto(old)
+    setMessage({ kind: 'ok', text: '照片已刪除，可以重新拍照或上傳。' })
   }
 
   const analyze = async () => {
@@ -218,11 +244,33 @@ export default function WallPhotoPanel() {
             onClick={() => galleryInput.current?.click()}
             className="rounded-lg border border-sky-300 bg-white px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-50"
           >
-            🖼️ 上傳照片
+            🖼️ {wall.photoUrl ? '換一張' : '上傳照片'}
           </button>
         </div>
-        <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-        <input ref={galleryInput} type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+        {wall.photoUrl && !confirmDelete && (
+          <button
+            disabled={!!busy}
+            onClick={() => setConfirmDelete(true)}
+            className="self-end text-xs font-medium text-red-500 hover:text-red-600 hover:underline disabled:opacity-50"
+          >
+            🗑️ 刪除這張照片
+          </button>
+        )}
+        {wall.photoUrl && confirmDelete && (
+          <div className="flex items-center justify-between gap-2 rounded-lg bg-red-50 px-2 py-1.5 text-xs text-red-700">
+            <span>確定刪除照片？已標記的物件會保留。</span>
+            <span className="flex shrink-0 gap-1.5">
+              <button onClick={() => setConfirmDelete(false)} className="rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-600 hover:bg-slate-50">
+                取消
+              </button>
+              <button onClick={removePhoto} className="rounded-md bg-red-500 px-2 py-1 font-semibold text-white hover:bg-red-600">
+                刪除
+              </button>
+            </span>
+          </div>
+        )}
+        <input ref={cameraInput} type="file" accept="image/*,.heic,.heif" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+        <input ref={galleryInput} type="file" accept="image/*,.heic,.heif" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
         <button
           disabled={!photo || !!busy}
           onClick={analyze}

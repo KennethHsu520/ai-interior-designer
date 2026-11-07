@@ -13,7 +13,7 @@ import { useCollisions } from '@/lib/useCollisions'
 import { itemTypeInfo } from '@/types/room'
 import Wall from './Wall'
 import FurnitureMesh from './FurnitureMesh'
-import { sceneBridge } from './bridge'
+import { sceneBridge, type ViewCommand } from './bridge'
 
 function Floor() {
   const floor = useRoomStore((s) => s.room.floor)
@@ -76,6 +76,37 @@ function CameraRig() {
   }, [camera, gl])
 
   useEffect(() => {
+    if (!controls) return
+    const flyTo = (pos: THREE.Vector3, look: THREE.Vector3) => {
+      target.current = { pos, look, t: 0 }
+    }
+    const step = (dx: number, dz: number) => {
+      const fwd = new THREE.Vector3()
+      camera.getWorldDirection(fwd)
+      fwd.y = 0
+      if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1)
+      fwd.normalize()
+      const right = new THREE.Vector3(-fwd.z, 0, fwd.x)
+      const move = fwd.multiplyScalar(dz).add(right.multiplyScalar(dx))
+      flyTo(camera.position.clone().add(move), controls.target.clone().add(move))
+    }
+    sceneBridge.view = (cmd: ViewCommand) => {
+      const { floor, height } = useRoomStore.getState().room
+      const b = bbox(floor)
+      const r = Math.max(b.width, b.depth, 2)
+      if (cmd === 'reset') flyTo(new THREE.Vector3(b.cx + r * 0.9, height + r * 0.9, b.cz + r * 1.4), new THREE.Vector3(b.cx, 0.8, b.cz))
+      else if (cmd === 'top') flyTo(new THREE.Vector3(b.cx, r * 2.2 + height, b.cz + 0.01), new THREE.Vector3(b.cx, 0, b.cz))
+      else if (cmd === 'forward') step(0, 1)
+      else if (cmd === 'back') step(0, -1)
+      else if (cmd === 'left') step(-1, 0)
+      else if (cmd === 'right') step(1, 0)
+    }
+    return () => {
+      sceneBridge.view = null
+    }
+  }, [controls, camera])
+
+  useEffect(() => {
     if (selectedWall === null) return
     const { floor, height } = useRoomStore.getState().room
     const s = wallSegment(floor, selectedWall)
@@ -108,6 +139,83 @@ function CameraRig() {
     return () => controls.removeEventListener('start', stop)
   }, [controls])
 
+  return null
+}
+
+const MOVE_KEYS: Record<string, string> = {
+  w: 'f',
+  arrowup: 'f',
+  s: 'b',
+  arrowdown: 'b',
+  a: 'l',
+  d: 'r',
+  q: 'tl',
+  arrowleft: 'tl',
+  e: 'tr',
+  arrowright: 'tr',
+  z: 'down',
+  x: 'up',
+}
+
+function KeyboardMove() {
+  const camera = useThree((s) => s.camera)
+  const controls = useThree((s) => s.controls) as unknown as OrbitControlsImpl | null
+  const pressed = useRef(new Set<string>())
+
+  useEffect(() => {
+    const keys = pressed.current
+    const down = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      if (useRoomStore.getState().floorEditorOpen) return
+      const k = MOVE_KEYS[e.key.toLowerCase()]
+      if (!k) return
+      e.preventDefault()
+      keys.add(k)
+    }
+    const up = (e: KeyboardEvent) => {
+      const k = MOVE_KEYS[e.key.toLowerCase()]
+      if (k) keys.delete(k)
+    }
+    const clear = () => keys.clear()
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    window.addEventListener('blur', clear)
+    return () => {
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', clear)
+    }
+  }, [])
+
+  useFrame((_, dt) => {
+    const keys = pressed.current
+    if (!controls || keys.size === 0) return
+    const fwd = new THREE.Vector3()
+    camera.getWorldDirection(fwd)
+    fwd.y = 0
+    if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1)
+    fwd.normalize()
+    const right = new THREE.Vector3(-fwd.z, 0, fwd.x)
+    const speed = Math.max(1.5, camera.position.distanceTo(controls.target) * 0.8) * dt
+    const move = new THREE.Vector3()
+    if (keys.has('f')) move.add(fwd.clone().multiplyScalar(speed))
+    if (keys.has('b')) move.add(fwd.clone().multiplyScalar(-speed))
+    if (keys.has('l')) move.add(right.clone().multiplyScalar(-speed))
+    if (keys.has('r')) move.add(right.clone().multiplyScalar(speed))
+    if (keys.has('up')) move.y += speed
+    if (keys.has('down')) move.y -= Math.min(speed, controls.target.y)
+    camera.position.add(move)
+    controls.target.add(move)
+    const turn = (keys.has('tl') ? 1 : 0) - (keys.has('tr') ? 1 : 0)
+    if (turn) {
+      const off = camera.position.clone().sub(controls.target)
+      off.applyAxisAngle(new THREE.Vector3(0, 1, 0), turn * 1.6 * dt)
+      camera.position.copy(controls.target).add(off)
+    }
+    controls.update()
+  })
   return null
 }
 
@@ -184,11 +292,20 @@ export default function RoomScene() {
         makeDefault
         enabled={!dragging}
         target={orbitTarget}
-        maxPolarAngle={Math.PI / 2 - 0.02}
-        minDistance={0.8}
-        maxDistance={30}
+        enableDamping
+        dampingFactor={0.12}
+        rotateSpeed={0.9}
+        panSpeed={1.1}
+        zoomSpeed={1.1}
+        screenSpacePanning={false}
+        zoomToCursor
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2 - 0.01}
+        minDistance={0.3}
+        maxDistance={40}
       />
       <CameraRig />
+      <KeyboardMove />
       <SceneEnvironment />
     </Canvas>
   )

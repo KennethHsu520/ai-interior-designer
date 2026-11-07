@@ -1,6 +1,12 @@
 import * as THREE from 'three'
 
-export const sceneBridge: { camera: THREE.Camera | null; dom: HTMLElement | null } = { camera: null, dom: null }
+export type ViewCommand = 'reset' | 'top' | 'forward' | 'back' | 'left' | 'right'
+
+export const sceneBridge: {
+  camera: THREE.Camera | null
+  dom: HTMLElement | null
+  view: ((cmd: ViewCommand) => void) | null
+} = { camera: null, dom: null, view: null }
 
 export function screenToFloor(clientX: number, clientY: number) {
   const { camera, dom } = sceneBridge

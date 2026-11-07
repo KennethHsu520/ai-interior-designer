@@ -46,6 +46,8 @@ const FileSchema = z.object({
         position: z.object({ x: z.number(), y: z.number(), z: z.number() }),
         rotationY: z.number(),
         scale: z.number(),
+        size: z.object({ width: z.number(), depth: z.number(), height: z.number() }).optional(),
+        colors: z.record(z.string(), z.string()).optional(),
       }),
     )
     .default([]),

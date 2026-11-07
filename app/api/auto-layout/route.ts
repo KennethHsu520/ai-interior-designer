@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { AIError, generateWithRetry, getProvider } from '@/lib/ai/provider'
-import { CATALOG_MAP } from '@/lib/catalog'
+import { CATALOG_MAP, furnitureDims } from '@/lib/catalog'
 import { describeRoomForAI, heuristicLayout } from '@/lib/layout'
 import { validateFloor } from '@/lib/geometry'
 import type { PlacedFurniture, Room } from '@/types/room'
@@ -92,9 +92,9 @@ export async function POST(request: Request) {
         name: c.name,
         category: c.category,
         styles: c.styles,
-        width: +(c.size.width * f.scale).toFixed(2),
-        depth: +(c.size.depth * f.scale).toFixed(2),
-        height: +(c.size.height * f.scale).toFixed(2),
+        width: +furnitureDims(f, c).width.toFixed(2),
+        depth: +furnitureDims(f, c).depth.toFixed(2),
+        height: +furnitureDims(f, c).height.toFixed(2),
         current: body.mode === 'adjust' ? { x: +f.position.x.toFixed(2), z: +f.position.z.toFixed(2), rotationY: +f.rotationY.toFixed(3) } : undefined,
       }
     })

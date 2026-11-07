@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { CatalogItem } from '@/types/room'
 import { loadPhoto, savePhoto, PHOTO_PREFIX } from './image'
+import { buildProcedural } from './proceduralThree'
 
 const SIZE = 160
 const VERSION = 'v1'
@@ -24,13 +25,12 @@ function getRenderer() {
 }
 
 async function render(item: CatalogItem): Promise<string> {
-  const gltf = await loader.loadAsync(item.file)
+  const model = item.procedural ? buildProcedural(item.procedural.kind, item.size, item.procedural.colors) : (await loader.loadAsync(item.file)).scene
   const scene = new THREE.Scene()
   scene.add(new THREE.HemisphereLight('#ffffff', '#8a8070', 2.2))
   const dir = new THREE.DirectionalLight('#ffffff', 2)
   dir.position.set(3, 5, 4)
   scene.add(dir)
-  const model = gltf.scene
   scene.add(model)
   const box = new THREE.Box3().setFromObject(model)
   const center = box.getCenter(new THREE.Vector3())
@@ -46,12 +46,13 @@ async function render(item: CatalogItem): Promise<string> {
   const url = gl.domElement.toDataURL('image/png')
   scene.traverse((o) => {
     const m = o as THREE.Mesh
-    if (m.isMesh) {
+    if (m.isMesh && !item.procedural) {
       m.geometry.dispose()
       const mats = Array.isArray(m.material) ? m.material : [m.material]
       mats.forEach((mat) => mat.dispose())
     }
   })
+  model.userData.dispose?.()
   return url
 }
 
