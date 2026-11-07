@@ -154,8 +154,8 @@ export default function Editor() {
         </div>
       </header>
 
-      <main className="relative flex min-h-0 flex-1 flex-col md:flex-row">
-        <div className="relative min-h-0 flex-1" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
+      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col md:flex-row">
+        <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
           <RoomScene />
           <ViewControls />
           <div className="pointer-events-none absolute left-3 top-3 max-w-[70%] rounded-lg bg-white/85 px-3 py-1.5 text-[11px] text-slate-600 shadow backdrop-blur">
