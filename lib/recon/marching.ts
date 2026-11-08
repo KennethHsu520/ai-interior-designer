@@ -35,8 +35,7 @@ export function marchingCubes(field: Float32Array, rgb: Float32Array, n: number,
   const colors: number[] = []
   const indices: number[] = []
   const edgeVertex = new Map<number, number>()
-  const vals = new Float64Array(8)
-  const ids = new Int32Array(8)
+  const ids = new Int32Array(12)
 
   const vertexOn = (cx: number, cy: number, cz: number, e: number) => {
     const [a, b] = EDGES[e]
@@ -76,9 +75,7 @@ export function marchingCubes(field: Float32Array, rgb: Float32Array, n: number,
       for (let z = 0; z < n - 1; z++) {
         let cube = 0
         for (let c = 0; c < 8; c++) {
-          const v = field[idx(x + CORNERS[c][0], y + CORNERS[c][1], z + CORNERS[c][2])]
-          vals[c] = v
-          if (v < iso) cube |= 1 << c
+          if (field[idx(x + CORNERS[c][0], y + CORNERS[c][1], z + CORNERS[c][2])] < iso) cube |= 1 << c
         }
         const edges = edgeTable[cube]
         if (!edges) continue

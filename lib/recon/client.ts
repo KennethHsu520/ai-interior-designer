@@ -1,7 +1,6 @@
 'use client'
 
 import * as THREE from 'three'
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
 
 export const RECON_DOWNLOAD = '約 490 MB（TripoSR 485 MB＋去背模型 U²-Net 5 MB）'
 
@@ -70,10 +69,14 @@ export function runRecon(image: string, onProgress: (p: ReconProgress) => void, 
 export function buildMeshObject(mesh: ReconMesh, size: { width: number; depth: number; height: number }) {
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(mesh.positions.slice(), 3))
-  geo.setAttribute('color', new THREE.BufferAttribute(mesh.colors.slice(), 3))
+  const linear = mesh.colors.map((v) => {
+    const c = Math.min(1, Math.max(0, v))
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  geo.setAttribute('color', new THREE.BufferAttribute(linear, 3))
   geo.setIndex(new THREE.BufferAttribute(mesh.indices.slice(), 1))
   geo.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI / 2))
-  geo.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+  geo.applyMatrix4(new THREE.Matrix4().makeRotationY(-Math.PI / 2))
   geo.computeBoundingBox()
   const box = geo.boundingBox!
   const ext = box.getSize(new THREE.Vector3())
@@ -84,13 +87,4 @@ export function buildMeshObject(mesh: ReconMesh, size: { width: number; depth: n
   const obj = new THREE.Mesh(geo, material)
   obj.name = 'generated'
   return obj
-}
-
-export async function meshToGlbDataUrl(obj: THREE.Object3D) {
-  const exporter = new GLTFExporter()
-  const buffer = (await exporter.parseAsync(obj, { binary: true })) as ArrayBuffer
-  const bytes = new Uint8Array(buffer)
-  let bin = ''
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
-  return `data:model/gltf-binary;base64,${btoa(bin)}`
 }

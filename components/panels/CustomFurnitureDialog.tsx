@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-import { compressImage, loadPhoto, savePhoto } from '@/lib/image'
+import { OrbitControls, useGLTF } from '@react-three/drei'
+import * as THREE from 'three'
+import { compressImage, deletePhoto, loadPhoto, savePhoto } from '@/lib/image'
 import { extractColors } from '@/lib/colorExtract'
 import { KINDS, rolesOf, roleLabel, SWATCHES, type Role } from '@/lib/procedural'
 import { CATEGORY_ICON } from '@/lib/catalog'
@@ -12,6 +13,64 @@ import { PROCEDURAL_CATALOG } from '@/lib/procedural'
 import { getThumbnail } from '@/lib/thumbnails'
 import { ProceduralModel } from '@/components/scene/FurnitureMesh'
 import type { CatalogItem } from '@/types/room'
+import { buildMeshObject, RECON_DOWNLOAD, reconSupported, runRecon, STAGE_LABEL, type ReconMesh, type ReconProgress } from '@/lib/recon/client'
+import { objectToGlbDataUrl, resizeStoredModel, resolveModelUrl } from '@/lib/modelUrl'
+
+type ReconState =
+  | { status: 'checking' }
+  | { status: 'unsupported'; reason: string }
+  | { status: 'idle' }
+  | { status: 'consent' }
+  | { status: 'working'; progress: ReconProgress }
+  | { status: 'failed'; message: string }
+
+const RECON_CONSENT_KEY = 'recon-model-consent'
+
+function StoredPreview({ file, size }: { file: string; size: { width: number; depth: number; height: number } }) {
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    resolveModelUrl(file).then((u) => alive && setUrl(u))
+    return () => {
+      alive = false
+    }
+  }, [file])
+  if (!url) return null
+  return <StoredPreviewInner url={url} size={size} />
+}
+
+function StoredPreviewInner({ url, size }: { url: string; size: { width: number; depth: number; height: number } }) {
+  const { scene } = useGLTF(url)
+  const obj = useMemo(() => {
+    const c = scene.clone(true)
+    const box = new THREE.Box3().setFromObject(c)
+    const ext = box.getSize(new THREE.Vector3())
+    const inner = new THREE.Group()
+    inner.add(c)
+    inner.position.set(-(box.min.x + ext.x / 2), -box.min.y, -(box.min.z + ext.z / 2))
+    const holder = new THREE.Group()
+    holder.add(inner)
+    holder.scale.set(size.width / (ext.x || 1), size.height / (ext.y || 1), size.depth / (ext.z || 1))
+    return holder
+  }, [scene, size])
+  return <primitive object={obj} />
+}
+
+function GeneratedPreview({ mesh, size }: { mesh: ReconMesh; size: { width: number; depth: number; height: number } }) {
+  const key = `${size.width}|${size.depth}|${size.height}`
+  const obj = useMemo(() => {
+    const [w, d, h] = key.split('|').map(Number)
+    return buildMeshObject(mesh, { width: w, depth: d, height: h })
+  }, [mesh, key])
+  useEffect(
+    () => () => {
+      obj.geometry.dispose()
+      ;(obj.material as THREE.Material).dispose()
+    },
+    [obj],
+  )
+  return <primitive object={obj} />
+}
 
 const KIND_CATEGORIES = Array.from(new Set(KINDS.map((k) => k.category)))
 
@@ -52,6 +111,19 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
   const [name, setName] = useState(editing?.name ?? kindOf('sofa-2')?.name ?? '')
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [recon, setRecon] = useState<ReconState>({ status: 'checking' })
+  const [reconMesh, setReconMesh] = useState<ReconMesh | null>(null)
+  const [useGenerated, setUseGenerated] = useState(!!editing?.modelRef)
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    reconSupported().then((r) => alive && setRecon(r.ok ? { status: 'idle' } : { status: 'unsupported', reason: r.reason ?? '此裝置不支援' }))
+    return () => {
+      alive = false
+      abortRef.current?.abort()
+    }
+  }, [])
 
   useEffect(() => {
     if (!editing?.photoRef) return
@@ -105,7 +177,34 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
   }
 
   const sizeOk = size.width >= 0.05 && size.width <= 6 && size.depth >= 0.05 && size.depth <= 6 && size.height >= 0.02 && size.height <= 3
-  const canSave = !!name.trim() && sizeOk && !busy
+  const canSave = !!name.trim() && sizeOk && !busy && recon.status !== 'working'
+  const generatedAvailable = !!reconMesh || !!editing?.modelRef
+
+  const startRecon = async () => {
+    if (!photo) return
+    let consent = false
+    try {
+      consent = localStorage.getItem(RECON_CONSENT_KEY) === '1'
+    } catch {}
+    if (!consent) {
+      setRecon({ status: 'consent' })
+      return
+    }
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    setRecon({ status: 'working', progress: { stage: 'download-model', percent: 0 } })
+    try {
+      const mesh = await runRecon(photo, (progress) => setRecon({ status: 'working', progress }), ctrl.signal)
+      setReconMesh(mesh)
+      setUseGenerated(true)
+      setRecon({ status: 'idle' })
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') setRecon({ status: 'idle' })
+      else setRecon({ status: 'failed', message: e instanceof Error ? e.message : '生成失敗' })
+    } finally {
+      abortRef.current = null
+    }
+  }
 
   const save = async () => {
     if (!canSave) return
@@ -115,13 +214,24 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
       const id = editing?.id ?? `${CUSTOM_PREFIX}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
       let photoRef = editing?.photoRef
       if (photo && photoChanged) photoRef = await savePhoto(`${id}_photo_${Date.now()}`, photo)
+      const finalSize = { width: Math.round(size.width * 100) / 100, depth: Math.round(size.depth * 100) / 100, height: Math.round(size.height * 100) / 100 }
+      let modelRef: string | undefined
+      if (useGenerated) {
+        const sameSize = editing && editing.size.width === finalSize.width && editing.size.depth === finalSize.depth && editing.size.height === finalSize.height
+        let glb: string | null = null
+        if (reconMesh) glb = await objectToGlbDataUrl(buildMeshObject(reconMesh, finalSize))
+        else if (editing?.modelRef && !sameSize) glb = await resizeStoredModel(editing.modelRef, finalSize)
+        modelRef = glb ? await savePhoto(`${id}_model_${Date.now()}`, glb) : editing?.modelRef
+      }
+      if (editing?.modelRef && editing.modelRef !== modelRef) await deletePhoto(editing.modelRef)
       const item: CustomFurniture = {
         id,
         name: name.trim(),
         kind,
-        size: { width: Math.round(size.width * 100) / 100, depth: Math.round(size.depth * 100) / 100, height: Math.round(size.height * 100) / 100 },
+        size: finalSize,
         colors,
         photoRef,
+        modelRef,
         createdAt: editing?.createdAt ?? Date.now(),
       }
       await saveCustomFurniture(item)
@@ -194,6 +304,72 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
               <input ref={galleryRef} type="file" accept="image/*,.heic,.heif" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
             </section>
 
+            {recon.status !== 'unsupported' && recon.status !== 'checking' && (
+              <section className="flex flex-col gap-2 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-violet-900">🧪 實驗：從照片生成 3D 形狀</h3>
+                  <span className="rounded-full bg-violet-200 px-2 py-0.5 text-[10px] font-semibold text-violet-800">實驗功能</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-violet-900/80">形狀僅供參考，尺寸以你在 ③ 輸入的為準。全部在你的電腦上用顯示卡運算，照片不會上傳。背景越單純、家具越完整入鏡，效果越好。</p>
+                {recon.status === 'consent' && (
+                  <div className="flex flex-col gap-2 rounded-lg bg-white p-2 text-[11px] text-slate-700">
+                    <p>第一次使用需要下載 3D 生成模型（{RECON_DOWNLOAD}），下載後會存在瀏覽器，下次不用再下載。建議使用 Wi-Fi。</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => setRecon({ status: 'idle' })} className="rounded-md border border-slate-200 px-3 py-1 font-semibold text-slate-600">
+                        先不要
+                      </button>
+                      <button
+                        onClick={() => {
+                          try {
+                            localStorage.setItem(RECON_CONSENT_KEY, '1')
+                          } catch {}
+                          setRecon({ status: 'idle' })
+                          setTimeout(startRecon, 0)
+                        }}
+                        className="flex-1 rounded-md bg-violet-600 px-3 py-1 font-bold text-white hover:bg-violet-500"
+                      >
+                        下載並開始生成
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {recon.status === 'working' && (
+                  <div className="flex flex-col gap-1.5 text-[11px] text-violet-900">
+                    <div className="flex items-center justify-between">
+                      <span>
+                        {STAGE_LABEL[recon.progress.stage]}… {Math.round(recon.progress.percent)}%
+                      </span>
+                      <button onClick={() => abortRef.current?.abort()} className="rounded-md border border-violet-300 bg-white px-2 py-0.5 font-semibold text-violet-700 hover:bg-violet-100">
+                        取消
+                      </button>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-violet-100">
+                      <div className="h-full rounded-full bg-violet-500 transition-all" style={{ width: `${recon.progress.percent}%` }} />
+                    </div>
+                  </div>
+                )}
+                {recon.status === 'failed' && <p className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">沒有成功：{recon.message}。已改用下面的參數化家具，你可以換一張照片再試。</p>}
+                {(recon.status === 'idle' || recon.status === 'failed') && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      disabled={!photo || !!busy}
+                      onClick={startRecon}
+                      className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-500 disabled:bg-slate-300"
+                    >
+                      {reconMesh ? '重新生成' : '✨ 從照片生成形狀'}
+                    </button>
+                    {!photo && <span className="text-[11px] text-slate-500">請先在 ① 拍照或上傳照片</span>}
+                    {generatedAvailable && (
+                      <label className="ml-auto flex items-center gap-1.5 text-[11px] text-violet-900">
+                        <input type="checkbox" checked={useGenerated} onChange={(e) => setUseGenerated(e.target.checked)} className="accent-violet-600" />
+                        使用生成的形狀
+                      </label>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
             <section className="flex flex-col gap-2">
               <h3 className="text-sm font-bold text-slate-800">② 家具類型</h3>
               <div className="flex flex-wrap gap-1">
@@ -234,6 +410,7 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
 
             <section className="flex flex-col gap-2">
               <h3 className="text-sm font-bold text-slate-800">④ 顏色</h3>
+              {useGenerated && generatedAvailable && <p className="text-[11px] text-slate-500">目前使用生成的 3D 形狀，顏色直接來自照片；改用參數化家具時才會套用下面的顏色。</p>}
               {roles.length > 1 && (
                 <div className="flex flex-wrap gap-1">
                   {roles.map((r) => (
@@ -269,7 +446,13 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                 <hemisphereLight args={['#ffffff', '#8a8070', 2.2]} />
                 <directionalLight position={[3, 5, 4]} intensity={2} />
                 <group position={[0, -size.height / 2, 0]}>
-                  <ProceduralModel kind={kind} size={size} colors={colors} />
+                  {useGenerated && reconMesh ? (
+                    <GeneratedPreview mesh={reconMesh} size={size} />
+                  ) : useGenerated && editing?.modelRef ? (
+                    <StoredPreview file={editing.modelRef} size={size} />
+                  ) : (
+                    <ProceduralModel kind={kind} size={size} colors={colors} />
+                  )}
                 </group>
                 <OrbitControls enablePan={false} minDistance={1} maxDistance={8} autoRotate autoRotateSpeed={1.2} />
               </Canvas>

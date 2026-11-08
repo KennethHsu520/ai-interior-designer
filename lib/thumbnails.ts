@@ -6,6 +6,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import type { CatalogItem } from '@/types/room'
 import { loadPhoto, savePhoto, PHOTO_PREFIX } from './image'
 import { buildProcedural } from './proceduralThree'
+import { resolveModelUrl } from './modelUrl'
 
 const SIZE = 160
 const VERSION = 'v1'
@@ -27,7 +28,13 @@ function getRenderer() {
 }
 
 export async function renderThumbnail(item: CatalogItem): Promise<string> {
-  const model = item.procedural ? buildProcedural(item.procedural.kind, item.size, item.procedural.colors) : (await loader.loadAsync(item.file)).scene
+  let model: THREE.Object3D
+  if (item.procedural) model = buildProcedural(item.procedural.kind, item.size, item.procedural.colors)
+  else {
+    const url = await resolveModelUrl(item.file)
+    if (!url) throw new Error('missing model')
+    model = (await loader.loadAsync(url)).scene
+  }
   const scene = new THREE.Scene()
   scene.add(new THREE.HemisphereLight('#ffffff', '#8a8070', 2.2))
   const dir = new THREE.DirectionalLight('#ffffff', 2)

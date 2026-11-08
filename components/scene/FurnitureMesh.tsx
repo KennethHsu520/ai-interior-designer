@@ -1,12 +1,13 @@
 'use client'
 
-import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { Edges, useGLTF } from '@react-three/drei'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useRoomStore } from '@/store/useRoomStore'
 import { furnitureColors, furnitureDims } from '@/lib/catalog'
 import { buildProcedural } from '@/lib/proceduralThree'
+import { isStoredModel, resolveModelUrl } from '@/lib/modelUrl'
 import type { CatalogItem, PlacedFurniture } from '@/types/room'
 
 type Capturable = { setPointerCapture: (id: number) => void; releasePointerCapture: (id: number) => void }
@@ -21,8 +22,21 @@ class ModelBoundary extends Component<{ fallback: ReactNode; children: ReactNode
   }
 }
 
-function Model({ item, stretch, tint }: { item: CatalogItem; stretch: [number, number, number]; tint?: string }) {
-  const { scene } = useGLTF(item.file)
+function StoredModel({ item, stretch, tint }: { item: CatalogItem; stretch: [number, number, number]; tint?: string }) {
+  const [state, setState] = useState<{ file: string; url: string | null } | null>(null)
+  useEffect(() => {
+    let alive = true
+    resolveModelUrl(item.file).then((url) => alive && setState({ file: item.file, url }))
+    return () => {
+      alive = false
+    }
+  }, [item.file])
+  if (!state || state.file !== item.file || !state.url) return <Placeholder item={item} />
+  return <Model item={item} url={state.url} stretch={stretch} tint={tint} />
+}
+
+function Model({ item, url, stretch, tint }: { item: CatalogItem; url?: string; stretch: [number, number, number]; tint?: string }) {
+  const { scene } = useGLTF(url ?? item.file)
   const cloned = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((o) => {
@@ -124,7 +138,7 @@ export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture
         ) : (
           <ModelBoundary fallback={<Placeholder item={item} />}>
             <Suspense fallback={<Placeholder item={item} />}>
-              <Model item={item} stretch={stretch} tint={f.colors?.main} />
+              {isStoredModel(item.file) ? <StoredModel item={item} stretch={stretch} tint={f.colors?.main} /> : <Model item={item} stretch={stretch} tint={f.colors?.main} />}
             </Suspense>
           </ModelBoundary>
         )}
