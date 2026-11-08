@@ -108,6 +108,6 @@ export function describeRoomForAI(room: Room) {
         }),
       }
     }),
-    ceilingItems: room.ceilingItems.map((c) => ({ type: c.type, label: c.label, x: +c.offset.toFixed(2), z: +c.elevation.toFixed(2) })),
+    ceilingItems: room.ceilingItems.map((c) => ({ type: c.type, label: c.label, x: +c.x.toFixed(2), z: +c.z.toFixed(2), width: +c.width.toFixed(2), depth: +c.depth.toFixed(2) })),
   }
 }

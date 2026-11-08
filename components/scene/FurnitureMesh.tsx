@@ -97,7 +97,7 @@ export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture
     const p = hit(e)
     if (!p) return
     drag.current = { dx: f.position.x - p.x, dz: f.position.z - p.z }
-    st.setDragging(true)
+    st.beginFurnitureDrag()
     ;(e.target as unknown as Capturable).setPointerCapture(e.pointerId)
   }
   const onMove = (e: ThreeEvent<PointerEvent>) => {
@@ -112,13 +112,13 @@ export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture
   const onUp = (e: ThreeEvent<PointerEvent>) => {
     if (!drag.current) return
     drag.current = null
-    useRoomStore.getState().setDragging(false)
+    useRoomStore.getState().endFurnitureDrag()
     ;(e.target as unknown as Capturable).releasePointerCapture(e.pointerId)
   }
 
   return (
     <group position={[f.position.x, f.position.y, f.position.z]} rotation={[0, f.rotationY, 0]}>
-      <group scale={f.scale} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
+      <group scale={f.scale} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {item.procedural ? (
           <ProceduralModel kind={item.procedural.kind} size={base} colors={colors} />
         ) : (

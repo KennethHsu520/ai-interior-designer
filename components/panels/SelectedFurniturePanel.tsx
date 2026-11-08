@@ -11,17 +11,7 @@ import { clearanceIssues, cm, wallDistances } from '@/lib/planData'
 
 const STEP = Math.PI / 12
 
-export default function SelectedFurniturePanel() {
-  const id = useRoomStore((s) => s.selectedFurnitureId)
-  const f = useRoomStore((s) => s.furniture.find((q) => q.id === s.selectedFurnitureId))
-  const updateFurniture = useRoomStore((s) => s.updateFurniture)
-  const removeFurniture = useRoomStore((s) => s.removeFurniture)
-  const selectFurniture = useRoomStore((s) => s.selectFurniture)
-  const collisions = useCollisions()
-  const [role, setRole] = useState<Role>('main')
-  const room = useRoomStore((s) => s.room)
-  const allFurniture = useRoomStore((s) => s.furniture)
-
+export function useFurnitureShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
@@ -36,6 +26,18 @@ export default function SelectedFurniturePanel() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+}
+
+export default function SelectedFurniturePanel({ floating = false }: { floating?: boolean }) {
+  const id = useRoomStore((s) => s.selectedFurnitureId)
+  const f = useRoomStore((s) => s.furniture.find((q) => q.id === s.selectedFurnitureId))
+  const updateFurniture = useRoomStore((s) => s.updateFurniture)
+  const removeFurniture = useRoomStore((s) => s.removeFurniture)
+  const selectFurniture = useRoomStore((s) => s.selectFurniture)
+  const collisions = useCollisions()
+  const [role, setRole] = useState<Role>('main')
+  const room = useRoomStore((s) => s.room)
+  const allFurniture = useRoomStore((s) => s.furniture)
 
   if (!id || !f) return null
   const item = CATALOG_MAP.get(f.catalogId)
@@ -54,8 +56,10 @@ export default function SelectedFurniturePanel() {
   const advice = clearanceIssues(room, allFurniture, CATALOG_MAP).get(f.id) ?? []
   const changed = !!f.size || !!(f.colors && Object.keys(f.colors).length)
 
-  return (
-    <div className={`flex flex-col gap-2 rounded-xl border p-3 ${res?.ok === false ? 'border-red-300 bg-red-50' : 'border-sky-200 bg-sky-50'}`}>
+  const tone = res?.ok === false ? 'border-red-300 bg-red-50' : 'border-sky-200 bg-sky-50'
+
+  const head = (
+    <>
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="text-sm font-bold text-slate-800">{item.name}</h3>
@@ -108,6 +112,10 @@ export default function SelectedFurniturePanel() {
           刪除
         </button>
       </div>
+    </>
+  )
+
+  const editBox = (
       <div className="flex flex-col gap-1.5 rounded-lg bg-white/70 p-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-700">尺寸（公尺）</span>
@@ -154,7 +162,26 @@ export default function SelectedFurniturePanel() {
           <input type="color" value={/^#[0-9a-f]{6}$/i.test(current) ? current : '#cccccc'} onChange={(e) => setColor(e.target.value)} className="h-6 w-10 cursor-pointer rounded border border-slate-200" />
         </label>
       </div>
-      <p className="text-[10px] text-slate-400">在 3D 中拖曳移動・鍵盤 R 旋轉、Delete 刪除・藍色三角形是正面</p>
+  )
+
+  const hint = <p className="text-[10px] text-slate-400">在 3D 中拖曳移動・鍵盤 R 旋轉、Delete 刪除・藍色三角形是正面</p>
+
+  if (floating)
+    return (
+      <div className={`@container flex flex-col gap-2 rounded-xl border p-3 shadow-lg backdrop-blur ${tone}`}>
+        <div className="grid gap-3 @xl:grid-cols-2">
+          <div className="flex flex-col gap-2">{head}</div>
+          {editBox}
+        </div>
+        {hint}
+      </div>
+    )
+
+  return (
+    <div className={`flex flex-col gap-2 rounded-xl border p-3 ${tone}`}>
+      {head}
+      {editBox}
+      {hint}
     </div>
   )
 }

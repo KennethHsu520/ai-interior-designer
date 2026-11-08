@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRoomStore, useSelectedWall } from '@/store/useRoomStore'
 import { bbox, clampItem, uid, wallPoint, wallSegment } from '@/lib/geometry'
 import { compressImage, deletePhoto, loadPhoto, savePhoto } from '@/lib/image'
-import { DEFAULT_SWING, itemTypeInfo, WALL_ITEM_TYPES, type DoorSwing, type WallItem, type WallItemType } from '@/types/room'
+import { DEFAULT_SWING, itemTypeInfo, WALL_ITEM_TYPES, type CeilingItem, type DoorSwing, type WallItem, type WallItemType } from '@/types/room'
 import NumberField from '@/components/ui/NumberField'
 import WallElevation from './WallElevation'
 
@@ -58,7 +58,7 @@ export default function WallPhotoPanel() {
   const updateItem = useRoomStore((s) => s.updateItem)
   const removeItem = useRoomStore((s) => s.removeItem)
   const confirmWall = useRoomStore((s) => s.confirmWall)
-  const addCeilingItems = useRoomStore((s) => s.addCeilingItems)
+  const replaceWallCeilingItems = useRoomStore((s) => s.replaceWallCeilingItems)
   const cameraInput = useRef<HTMLInputElement>(null)
   const galleryInput = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState<null | 'photo' | 'ai'>(null)
@@ -122,12 +122,13 @@ export default function WallPhotoPanel() {
     setBusy('ai')
     setMessage(null)
     try {
+      if (photo.length > 5_900_000) throw new Error('照片檔案太大，請重新拍攝或換一張較小的照片')
       const res = await fetch('/api/analyze-wall', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: photo, wallLength: length, roomHeight: height }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || '辨識失敗')
       const dets = data.items as Detection[]
       const wallItems: WallItem[] = dets
@@ -151,7 +152,7 @@ export default function WallPhotoPanel() {
         )
       const b = bbox(room.floor)
       const inset = Math.min(1.2, Math.min(b.width, b.depth) / 2)
-      const ceiling: WallItem[] = dets
+      const ceiling: CeilingItem[] = dets
         .filter((d) => d.location === 'ceiling')
         .map((d) => {
           const p = wallPoint(room.floor, index, ((d.x0 + d.x1) / 2) * length, inset)
@@ -159,18 +160,19 @@ export default function WallPhotoPanel() {
             id: uid('ceil'),
             type: d.type,
             label: d.label,
-            offset: p.x,
-            elevation: p.z,
+            x: p.x,
+            z: p.z,
             width: Math.max(0.2, (d.x1 - d.x0) * length),
-            height: Math.max(0.2, (d.x1 - d.x0) * length * 0.5),
+            depth: Math.max(0.2, (d.x1 - d.x0) * length * 0.5),
             confidence: d.confidence,
             confirmed: false,
+            sourceWallId: wall.id,
           }
         })
       const kept = wall.items.filter((it) => it.confirmed)
       setWallItems(index, [...kept, ...wallItems])
       if (data.wall) setPhotoBounds(index, data.wall)
-      if (ceiling.length) addCeilingItems(ceiling)
+      replaceWallCeilingItems(wall.id, ceiling)
       const text = `辨識到 ${wallItems.length} 件牆面物件${ceiling.length ? `、${ceiling.length} 件天花板物件` : ''}，請逐一檢查位置。`
       setMessage(
         data.mock

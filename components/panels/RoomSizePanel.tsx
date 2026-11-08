@@ -15,6 +15,7 @@ export default function RoomSizePanel() {
   const selectWall = useRoomStore((s) => s.selectWall)
   const setFloorEditorOpen = useRoomStore((s) => s.setFloorEditorOpen)
   const removeCeilingItem = useRoomStore((s) => s.removeCeilingItem)
+  const updateCeilingItem = useRoomStore((s) => s.updateCeilingItem)
   const setStage = useRoomStore((s) => s.setStage)
   const setFloor = useRoomStore((s) => s.setFloor)
 
@@ -142,9 +143,15 @@ export default function RoomSizePanel() {
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: itemTypeInfo(c.type).color }} />
                   {itemTypeInfo(c.type).label}・{c.label}
                 </span>
-                <button onClick={() => removeCeilingItem(c.id)} className="text-slate-400 hover:text-red-500">
-                  刪除
-                </button>
+                <span className="flex items-center gap-3">
+                  <label className="flex items-center gap-1 text-slate-500">
+                    <input type="checkbox" checked={c.confirmed} onChange={(e) => updateCeilingItem(c.id, { confirmed: e.target.checked })} />
+                    已確認
+                  </label>
+                  <button onClick={() => removeCeilingItem(c.id)} className="text-slate-400 hover:text-red-500">
+                    刪除
+                  </button>
+                </span>
               </li>
             ))}
           </ul>

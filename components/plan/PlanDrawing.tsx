@@ -270,12 +270,12 @@ export default function PlanDrawing({
         )
       })}
       {ceiling.map((c) => {
-        const x = c.offset * 100
-        const y = c.elevation * 100
+        const x = c.x * 100
+        const y = c.z * 100
         if (c.type === 'air_conditioner')
           return (
             <g key={c.id}>
-              <rect x={x - c.width * 50} y={y - c.height * 50} width={c.width * 100} height={c.height * 100} fill="none" stroke="#0e7490" strokeWidth={u * 0.2} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
+              <rect x={x - c.width * 50} y={y - c.depth * 50} width={c.width * 100} height={c.depth * 100} fill="none" stroke="#0e7490" strokeWidth={u * 0.2} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
               <text x={x} y={y} fontSize={u * 1.6} textAnchor="middle" dominantBaseline="central" fill="#0e7490">
                 天花 AC
               </text>

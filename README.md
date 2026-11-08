@@ -23,8 +23,21 @@ npm run dev
 AI_PROVIDER=anthropic
 AI_API_KEY=你的 Anthropic API Key
 AI_MODEL=claude-opus-5-5
+RATE_LIMIT_ANALYZE_PER_HOUR=20
+RATE_LIMIT_LAYOUT_PER_HOUR=30
 ```
 沒有填 `AI_API_KEY` 時網站會進入「示範模式」：辨識回傳假資料、自動配置改用內建規則，方便免費測試。
+
+### 呼叫次數限制（防止 API 被濫用）
+| 變數 | 預設 | 說明 |
+|---|---|---|
+| `RATE_LIMIT_ANALYZE_PER_HOUR` | 20 | 每個 IP 每小時最多呼叫幾次「AI 辨識牆面」 |
+| `RATE_LIMIT_LAYOUT_PER_HOUR` | 30 | 每個 IP 每小時最多呼叫幾次「AI 自動配置／文字調整」 |
+
+- 只有真的呼叫 AI 時才計次，示範模式不受限制。
+- 超過限制會回傳 HTTP 429 與 `Retry-After`，網頁顯示「呼叫太頻繁，請 N 分鐘後再試」。
+- 牆面照片請求超過 6 MB 會直接拒絕（HTTP 413），不會整包讀進記憶體。
+- **注意**：目前的限制存在伺服器記憶體中，Vercel 同時開多個執行個體時彼此不共享，重新部署也會歸零，只能擋住一般濫用。之後接上 Supabase 登入後，可以改成依帳號限制並存進資料庫。
 
 ## 指令
 | 指令 | 說明 |

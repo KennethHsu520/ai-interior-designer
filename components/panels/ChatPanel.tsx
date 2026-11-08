@@ -3,16 +3,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRoomStore } from '@/store/useRoomStore'
 import { requestLayout } from '@/lib/requestLayout'
+import { UndoLayoutButton } from '@/components/scene/HistoryControls'
 
-type Msg = { role: 'user' | 'ai'; text: string; kind?: 'warn' | 'error' }
+const WELCOME = '嗨！告訴我你想怎麼調整，例如「床靠窗」「留走道給輪椅」，我會重新安排房間裡的家具。之前說過的需求我也會記得。'
 
 const SUGGESTIONS = ['床靠窗', '我要北歐風的感覺', '留走道給輪椅', '沙發面向電視櫃', '讓房間看起來更寬敞']
 
 export default function ChatPanel() {
   const count = useRoomStore((s) => s.furniture.length)
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: 'ai', text: '嗨！告訴我你想怎麼調整，例如「床靠窗」「留走道給輪椅」，我會重新安排房間裡的家具。' },
-  ])
+  const messages = useRoomStore((s) => s.chat)
+  const addChatMessage = useRoomStore((s) => s.addChatMessage)
+  const clearChat = useRoomStore((s) => s.clearChat)
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
@@ -25,14 +26,15 @@ export default function ChatPanel() {
     const t = text.trim()
     if (!t || busy) return
     setInput('')
-    setMessages((m) => [...m, { role: 'user', text: t }])
+    const history = useRoomStore.getState().chat.filter((m) => m.kind !== 'error')
+    addChatMessage({ role: 'user', text: t })
     setBusy(true)
     try {
-      const r = await requestLayout('adjust', t)
+      const r = await requestLayout('adjust', t, history)
       const extra = r.failed ? `（有 ${r.failed} 件放不下，已標紅）` : r.moved ? `（已自動微調 ${r.moved} 件避免碰撞）` : ''
-      setMessages((m) => [...m, { role: 'ai', text: `${r.explanation}${extra}`, kind: r.mock ? 'warn' : undefined }])
+      addChatMessage({ role: 'ai', text: `${r.explanation}${extra}`, kind: r.mock ? 'warn' : undefined, revision: r.revision })
     } catch (e) {
-      setMessages((m) => [...m, { role: 'ai', text: e instanceof Error ? e.message : '調整失敗', kind: 'error' }])
+      addChatMessage({ role: 'ai', text: e instanceof Error ? e.message : '調整失敗', kind: 'error' })
     } finally {
       setBusy(false)
     }
@@ -41,6 +43,17 @@ export default function ChatPanel() {
   return (
     <div className="flex h-full flex-col gap-3">
       <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-slate-400">{messages.length ? `共 ${messages.length} 則對話（重新整理也會保留）` : ''}</span>
+          <button
+            onClick={clearChat}
+            disabled={busy || messages.length === 0}
+            className="rounded-md px-2 py-1 text-[11px] text-slate-500 hover:bg-slate-100 hover:text-red-600 disabled:opacity-40"
+          >
+            清除對話
+          </button>
+        </div>
+        <div className="max-w-[85%] self-start rounded-2xl rounded-bl-sm bg-slate-100 px-3 py-2 text-sm leading-relaxed text-slate-800">{WELCOME}</div>
         {messages.map((m, i) => (
           <div
             key={i}
@@ -55,6 +68,7 @@ export default function ChatPanel() {
             }`}
           >
             {m.text}
+            {m.role === 'ai' && <UndoLayoutButton revision={m.revision} />}
           </div>
         ))}
         {busy && <div className="self-start rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-500">AI 思考中…</div>}

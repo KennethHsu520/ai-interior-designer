@@ -42,8 +42,8 @@ function CeilingItems() {
   return (
     <group>
       {items.map((c) => (
-        <mesh key={c.id} position={[c.offset, height - 0.04, c.elevation]}>
-          <boxGeometry args={[Math.max(c.width, 0.15), 0.06, Math.max(c.height, 0.15)]} />
+        <mesh key={c.id} position={[c.x, height - 0.04, c.z]}>
+          <boxGeometry args={[Math.max(c.width, 0.15), 0.06, Math.max(c.depth, 0.15)]} />
           <meshStandardMaterial color={itemTypeInfo(c.type).color} emissive={itemTypeInfo(c.type).color} emissiveIntensity={0.4} />
         </mesh>
       ))}

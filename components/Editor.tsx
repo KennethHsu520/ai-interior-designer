@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { allWallsConfirmed, useRoomStore } from '@/store/useRoomStore'
 import { validateFloor } from '@/lib/geometry'
@@ -8,13 +8,26 @@ import { CATALOG_MAP } from '@/lib/catalog'
 import { exportRoom, importRoom } from '@/lib/io'
 import RoomScene from './scene/RoomScene'
 import ViewControls from './scene/ViewControls'
+import HistoryControls, { useHistoryShortcuts } from './scene/HistoryControls'
 import { screenToFloor } from './scene/bridge'
 import RoomSizePanel from './panels/RoomSizePanel'
 import FloorPlanEditor from './panels/FloorPlanEditor'
 import WallPhotoPanel from './panels/WallPhotoPanel'
 import FurnitureCatalog, { addToRoom } from './panels/FurnitureCatalog'
 import ChatPanel from './panels/ChatPanel'
-import SelectedFurniturePanel from './panels/SelectedFurniturePanel'
+import SelectedFurniturePanel, { useFurnitureShortcuts } from './panels/SelectedFurniturePanel'
+
+const WIDE_QUERY = '(min-width: 1024px)'
+
+function subscribeWide(onChange: () => void) {
+  const mq = window.matchMedia(WIDE_QUERY)
+  mq.addEventListener('change', onChange)
+  return () => mq.removeEventListener('change', onChange)
+}
+
+function useWideScreen() {
+  return useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE_QUERY).matches, () => false)
+}
 
 export default function Editor() {
   const stage = useRoomStore((s) => s.stage)
@@ -28,6 +41,10 @@ export default function Editor() {
   const [toast, setToast] = useState<string | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
   const importRef = useRef<HTMLInputElement>(null)
+  const wide = useWideScreen()
+  const hasSelection = useRoomStore((s) => s.selectedFurnitureId !== null)
+  useFurnitureShortcuts()
+  useHistoryShortcuts(stage === 'furniture')
 
   const ready = allWallsConfirmed(room) && validateFloor(room.floor).length === 0
   const confirmed = room.walls.filter((w) => w.confirmed).length
@@ -158,7 +175,13 @@ export default function Editor() {
         <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
           <RoomScene />
           <ViewControls />
-          <div className="pointer-events-none absolute left-3 top-3 max-w-[70%] rounded-lg bg-white/85 px-3 py-1.5 text-[11px] text-slate-600 shadow backdrop-blur">
+          {stage === 'furniture' && <HistoryControls />}
+          {stage === 'furniture' && wide && hasSelection && (
+            <div className="absolute bottom-3 right-3 max-h-[calc(100%-4.5rem)] w-[min(620px,calc(100%-352px))] min-w-[300px] overflow-y-auto rounded-xl">
+              <SelectedFurniturePanel floating />
+            </div>
+          )}
+          <div className={`pointer-events-none absolute left-3 top-3 rounded-lg ${stage === 'furniture' ? 'max-w-[calc(100%-12rem)]' : 'max-w-[70%]'} bg-white/85 px-3 py-1.5 text-[11px] text-slate-600 shadow backdrop-blur`}>
             {stage === 'room'
               ? selectedWall === null
                 ? '左鍵旋轉・右鍵平移・滾輪縮放・WASD 移動・點一面牆開始拍照'
@@ -193,7 +216,7 @@ export default function Editor() {
               selectedWall === null ? <RoomSizePanel /> : <WallPhotoPanel />
             ) : (
               <div className="flex flex-col gap-3">
-                <SelectedFurniturePanel />
+                {!wide && <SelectedFurniturePanel />}
                 {tab === 'catalog' ? <FurnitureCatalog /> : <ChatPanel />}
               </div>
             )}

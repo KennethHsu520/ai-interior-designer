@@ -40,7 +40,44 @@ export type Wall = {
   items: WallItem[]
 }
 
-export type CeilingItem = WallItem
+export type CeilingItem = {
+  id: string
+  type: WallItemType
+  label: string
+  x: number
+  z: number
+  width: number
+  depth: number
+  confidence?: number
+  confirmed: boolean
+  sourceWallId?: string
+}
+
+export type LegacyCeilingItem = {
+  id: string
+  type: WallItemType
+  label: string
+  offset: number
+  elevation: number
+  width: number
+  height: number
+  confidence?: number
+  confirmed: boolean
+}
+
+export function migrateCeilingItem(c: LegacyCeilingItem): CeilingItem {
+  return {
+    id: c.id,
+    type: c.type,
+    label: c.label,
+    x: c.offset,
+    z: c.elevation,
+    width: c.width,
+    depth: c.height,
+    ...(c.confidence !== undefined ? { confidence: c.confidence } : {}),
+    confirmed: c.confirmed,
+  }
+}
 
 export type Room = {
   id: string

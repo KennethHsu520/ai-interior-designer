@@ -1,12 +1,15 @@
 import { z } from 'zod'
 import { AIError, generateWithRetry, getProvider, type ImageInput } from '@/lib/ai/provider'
+import { BodyTooLargeError, hitRateLimit, limitFromEnv, readJsonLimited, tooManyRequests } from '@/lib/rateLimit'
 
 export const maxDuration = 60
+
+const MAX_BODY_BYTES = 6_000_000
 
 const TYPES = ['door', 'window', 'switch', 'outlet', 'light', 'air_conditioner', 'furniture', 'other'] as const
 
 const RequestSchema = z.object({
-  image: z.string().max(8_000_000),
+  image: z.string().max(MAX_BODY_BYTES),
   wallLength: z.number().positive().max(50),
   roomHeight: z.number().positive().max(10),
 })
@@ -71,20 +74,24 @@ const MOCK = {
     { type: 'window', label: '鋁窗（示範）', location: 'wall', x0: 0.35, x1: 0.65, y0: 0.25, y1: 0.6, confidence: 0.5 },
     { type: 'outlet', label: '雙孔插座（示範）', location: 'wall', x0: 0.1, x1: 0.14, y0: 0.86, y1: 0.9, confidence: 0.5 },
     { type: 'switch', label: '電燈開關（示範）', location: 'wall', x0: 0.85, x1: 0.89, y0: 0.53, y1: 0.58, confidence: 0.5 },
+    { type: 'light', label: '吸頂燈（示範）', location: 'ceiling', x0: 0.45, x1: 0.55, y0: 0, y1: 0.02, confidence: 0.5 },
   ],
 } satisfies z.infer<typeof DetectionSchema>
 
 export async function POST(request: Request) {
   let body: z.infer<typeof RequestSchema>
   try {
-    body = RequestSchema.parse(await request.json())
-  } catch {
+    body = RequestSchema.parse(await readJsonLimited(request, MAX_BODY_BYTES))
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) return Response.json({ error: '照片檔案太大，請重新拍攝或換一張較小的照片' }, { status: 413 })
     return Response.json({ error: '請求格式錯誤' }, { status: 400 })
   }
   try {
     const image = parseDataUrl(body.image)
     const provider = getProvider()
     if (!provider) return Response.json({ mock: true, ...MOCK })
+    const limited = hitRateLimit('analyze', request, limitFromEnv('RATE_LIMIT_ANALYZE_PER_HOUR', 20))
+    if (!limited.ok) return tooManyRequests(limited.retryAfter)
     const result = await generateWithRetry(
       provider,
       {

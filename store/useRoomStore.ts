@@ -2,7 +2,8 @@
 
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import type { CeilingItem, PhotoBounds, PlacedFurniture, Room, Vec2, WallItem } from '@/types/room'
+import { migrateCeilingItem } from '@/types/room'
+import type { CeilingItem, LegacyCeilingItem, PhotoBounds, PlacedFurniture, Room, Vec2, WallItem } from '@/types/room'
 import {
   clampItem,
   rectFloor,
@@ -18,6 +19,37 @@ import { CATALOG_MAP } from '@/lib/catalog'
 import { clampIntoRoom } from '@/lib/collision'
 
 export type Stage = 'room' | 'furniture'
+
+export type ChatMessage = { role: 'user' | 'ai'; text: string; kind?: 'warn' | 'error'; revision?: number }
+
+export const HISTORY_LIMIT = 30
+export const CHAT_LIMIT = 30
+const MERGE_WINDOW_MS = 800
+
+type HistoryState = {
+  past: PlacedFurniture[][]
+  future: PlacedFurniture[][]
+  revision: number
+  lastMark: { key: string; at: number } | null
+  dragBase: PlacedFurniture[] | null
+}
+
+function snapshot(s: HistoryState & { furniture: PlacedFurniture[] }, key?: string): Partial<HistoryState> {
+  const now = Date.now()
+  if (key && s.lastMark && s.lastMark.key === key && now - s.lastMark.at < MERGE_WINDOW_MS) {
+    return { lastMark: { key, at: now }, future: [], revision: s.revision + 1 }
+  }
+  return {
+    past: [...s.past, s.furniture].slice(-HISTORY_LIMIT),
+    future: [],
+    revision: s.revision + 1,
+    lastMark: key ? { key, at: now } : null,
+  }
+}
+
+function emptyHistory(): HistoryState {
+  return { past: [], future: [], revision: Date.now(), lastMark: null, dragBase: null }
+}
 
 export function createDefaultRoom(): Room {
   const floor = rectFloor(4, 3)
@@ -41,7 +73,8 @@ type State = {
   hoveredWall: number | null
   dragging: boolean
   floorEditorOpen: boolean
-}
+  chat: ChatMessage[]
+} & HistoryState
 
 type Actions = {
   setSize: (width: number, depth: number) => void
@@ -66,7 +99,7 @@ type Actions = {
   updateItem: (i: number, id: string, patch: Partial<WallItem>) => void
   removeItem: (i: number, id: string) => void
   confirmWall: (i: number, value: boolean) => void
-  addCeilingItems: (items: CeilingItem[]) => void
+  replaceWallCeilingItems: (wallId: string, items: CeilingItem[]) => void
   updateCeilingItem: (id: string, patch: Partial<CeilingItem>) => void
   removeCeilingItem: (id: string) => void
   setStage: (s: Stage) => void
@@ -75,6 +108,12 @@ type Actions = {
   removeFurniture: (id: string) => void
   setFurnitureList: (list: PlacedFurniture[]) => void
   selectFurniture: (id: string | null) => void
+  beginFurnitureDrag: () => void
+  endFurnitureDrag: () => void
+  undoFurniture: () => void
+  redoFurniture: () => void
+  addChatMessage: (m: ChatMessage) => void
+  clearChat: () => void
   importData: (data: { room: Room; furniture?: PlacedFurniture[] }) => void
   resetAll: () => void
 }
@@ -91,6 +130,8 @@ export const useRoomStore = create<State & Actions>()(
       hoveredWall: null,
       dragging: false,
       floorEditorOpen: false,
+      chat: [],
+      ...emptyHistory(),
 
       setSize: (width, depth) =>
         set((s) => {
@@ -175,7 +216,13 @@ export const useRoomStore = create<State & Actions>()(
             ),
           },
         })),
-      addCeilingItems: (items) => set((s) => ({ room: { ...s.room, ceilingItems: [...s.room.ceilingItems, ...items] } })),
+      replaceWallCeilingItems: (wallId, items) =>
+        set((s) => ({
+          room: {
+            ...s.room,
+            ceilingItems: [...s.room.ceilingItems.filter((c) => c.confirmed || c.sourceWallId !== wallId), ...items.map((c) => ({ ...c, sourceWallId: wallId }))],
+          },
+        })),
       updateCeilingItem: (id, patch) =>
         set((s) => ({ room: { ...s.room, ceilingItems: s.room.ceilingItems.map((c) => (c.id === id ? { ...c, ...patch } : c)) } })),
       removeCeilingItem: (id) => set((s) => ({ room: { ...s.room, ceilingItems: s.room.ceilingItems.filter((c) => c.id !== id) } })),
@@ -183,32 +230,75 @@ export const useRoomStore = create<State & Actions>()(
       addFurniture: (catalogId, x, z, rotationY = 0) => {
         const id = uid('furn')
         set((s) => ({
+          ...snapshot(s),
           furniture: [...s.furniture, { id, catalogId, position: { x, y: 0, z }, rotationY, scale: 1 }],
           selectedFurnitureId: id,
         }))
         return id
       },
       updateFurniture: (id, patch) =>
-        set((s) => ({
-          furniture: s.furniture.map((f) => {
-            if (f.id !== id) return f
-            const next = { ...f, ...patch }
-            const item = CATALOG_MAP.get(next.catalogId)
-            if (!item || !('position' in patch || 'rotationY' in patch || 'scale' in patch || 'size' in patch)) return next
-            return { ...next, position: clampIntoRoom(s.room.floor, next, item, f.position) }
-          }),
-        })),
+        set((s) => {
+          const current = s.furniture.find((f) => f.id === id)
+          if (!current) return {}
+          const merged = { ...current, ...patch }
+          const item = CATALOG_MAP.get(merged.catalogId)
+          const moved = !!item && ('position' in patch || 'rotationY' in patch || 'scale' in patch || 'size' in patch)
+          const next = moved && item ? { ...merged, position: clampIntoRoom(s.room.floor, merged, item, current.position) } : merged
+          if (JSON.stringify(next) === JSON.stringify(current)) return {}
+          return {
+            ...(s.dragBase ? {} : snapshot(s, `${id}:${Object.keys(patch).sort().join(',')}`)),
+            furniture: s.furniture.map((f) => (f.id === id ? next : f)),
+          }
+        }),
       removeFurniture: (id) =>
         set((s) => ({
+          ...snapshot(s),
           furniture: s.furniture.filter((f) => f.id !== id),
           selectedFurnitureId: s.selectedFurnitureId === id ? null : s.selectedFurnitureId,
         })),
-      setFurnitureList: (list) => set({ furniture: list }),
+      setFurnitureList: (list) => set((s) => ({ ...snapshot(s), furniture: list })),
       selectFurniture: (id) => set({ selectedFurnitureId: id }),
+      beginFurnitureDrag: () => set((s) => ({ dragging: true, dragBase: s.furniture })),
+      endFurnitureDrag: () =>
+        set((s) => {
+          const base = s.dragBase
+          if (!base || JSON.stringify(base) === JSON.stringify(s.furniture)) return { dragging: false, dragBase: null }
+          return { dragging: false, dragBase: null, past: [...s.past, base].slice(-HISTORY_LIMIT), future: [], revision: s.revision + 1, lastMark: null }
+        }),
+      undoFurniture: () =>
+        set((s) => {
+          if (!s.past.length || s.dragBase) return {}
+          const prev = s.past[s.past.length - 1]
+          return {
+            past: s.past.slice(0, -1),
+            future: [s.furniture, ...s.future].slice(0, HISTORY_LIMIT),
+            furniture: prev,
+            revision: s.revision + 1,
+            lastMark: null,
+            selectedFurnitureId: prev.some((f) => f.id === s.selectedFurnitureId) ? s.selectedFurnitureId : null,
+          }
+        }),
+      redoFurniture: () =>
+        set((s) => {
+          if (!s.future.length || s.dragBase) return {}
+          const next = s.future[0]
+          return {
+            past: [...s.past, s.furniture].slice(-HISTORY_LIMIT),
+            future: s.future.slice(1),
+            furniture: next,
+            revision: s.revision + 1,
+            lastMark: null,
+            selectedFurnitureId: next.some((f) => f.id === s.selectedFurnitureId) ? s.selectedFurnitureId : null,
+          }
+        }),
+      addChatMessage: (m) => set((s) => ({ chat: [...s.chat, m].slice(-CHAT_LIMIT) })),
+      clearChat: () => set({ chat: [] }),
       importData: (data) =>
         set({
           room: { ...data.room, walls: syncWalls(data.room.floor, data.room.walls), ceilingItems: data.room.ceilingItems ?? [] },
           furniture: data.furniture ?? [],
+          chat: [],
+          ...emptyHistory(),
           selectedWall: null,
           selectedItemId: null,
           selectedFurnitureId: null,
@@ -218,6 +308,8 @@ export const useRoomStore = create<State & Actions>()(
         set({
           room: createDefaultRoom(),
           furniture: [],
+          chat: [],
+          ...emptyHistory(),
           stage: 'room',
           selectedWall: null,
           selectedItemId: null,
@@ -226,9 +318,16 @@ export const useRoomStore = create<State & Actions>()(
     }),
     {
       name: 'ai-interior-designer',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ room: s.room, furniture: s.furniture, stage: s.stage }),
+      migrate: (persisted, version) => {
+        const state = persisted as { room?: { ceilingItems?: unknown[] } } | null
+        if (version < 2 && state?.room?.ceilingItems) {
+          state.room.ceilingItems = (state.room.ceilingItems as LegacyCeilingItem[]).map(migrateCeilingItem)
+        }
+        return state as State
+      },
+      partialize: (s) => ({ room: s.room, furniture: s.furniture, stage: s.stage, chat: s.chat }),
     },
   ),
 )

@@ -3,9 +3,12 @@ import { AIError, generateWithRetry, getProvider } from '@/lib/ai/provider'
 import { CATALOG_MAP, furnitureDims } from '@/lib/catalog'
 import { describeRoomForAI, heuristicLayout } from '@/lib/layout'
 import { validateFloor } from '@/lib/geometry'
+import { BodyTooLargeError, hitRateLimit, limitFromEnv, readJsonLimited, tooManyRequests } from '@/lib/rateLimit'
 import type { PlacedFurniture, Room } from '@/types/room'
 
 export const maxDuration = 60
+
+const MAX_BODY_BYTES = 1_000_000
 
 const Vec = z.object({ x: z.number(), z: z.number() })
 const ItemSchema = z.object({
@@ -20,6 +23,19 @@ const ItemSchema = z.object({
   swing: z.object({ hinge: z.enum(['start', 'end']), side: z.enum(['in', 'out']), angle: z.number() }).optional(),
 })
 
+const CeilingSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  label: z.string(),
+  x: z.number(),
+  z: z.number(),
+  width: z.number(),
+  depth: z.number(),
+  confidence: z.number().optional(),
+  confirmed: z.boolean(),
+  sourceWallId: z.string().optional(),
+})
+
 const RequestSchema = z.object({
   room: z.object({
     id: z.string(),
@@ -27,7 +43,7 @@ const RequestSchema = z.object({
     floor: z.array(Vec).min(3).max(64),
     height: z.number(),
     walls: z.array(z.object({ id: z.string(), index: z.number(), items: z.array(ItemSchema) })),
-    ceilingItems: z.array(ItemSchema),
+    ceilingItems: z.array(CeilingSchema),
   }),
   furniture: z
     .array(
@@ -45,6 +61,7 @@ const RequestSchema = z.object({
     .max(40),
   message: z.string().max(1000).optional(),
   mode: z.enum(['auto', 'adjust']),
+  history: z.array(z.object({ role: z.enum(['user', 'ai']), text: z.string().max(500) })).max(6).default([]),
 })
 
 const OutputSchema = z.object({
@@ -72,8 +89,9 @@ rotationY 是繞 y 軸的弧度，旋轉後正面方向為 (sin(rotationY), cos(
 export async function POST(request: Request) {
   let body: z.infer<typeof RequestSchema>
   try {
-    body = RequestSchema.parse(await request.json())
-  } catch {
+    body = RequestSchema.parse(await readJsonLimited(request, MAX_BODY_BYTES))
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) return Response.json({ error: '請求資料太大' }, { status: 413 })
     return Response.json({ error: '請求格式錯誤' }, { status: 400 })
   }
   const room = body.room as Room
@@ -85,12 +103,16 @@ export async function POST(request: Request) {
     const provider = getProvider()
     if (!provider) {
       const r = heuristicLayout(room, list, CATALOG_MAP)
+      const remembered = body.history.length ? `（已收到先前 ${body.history.filter((h) => h.role === 'user').length} 則需求）` : ''
       return Response.json({
         mock: true,
+        historyReceived: body.history.length,
         placements: r.list.map((f) => ({ id: f.id, x: f.position.x, z: f.position.z, rotationY: f.rotationY })),
-        explanation: body.mode === 'adjust' ? '目前為示範模式（未設定 AI_API_KEY），無法理解文字需求，已用內建規則重新排列。' : '示範模式：已用內建規則沿牆排列家具。',
+        explanation: `${body.mode === 'adjust' ? '目前為示範模式（未設定 AI_API_KEY），無法理解文字需求，已用內建規則重新排列。' : '示範模式：已用內建規則沿牆排列家具。'}${remembered}`,
       })
     }
+    const limited = hitRateLimit('layout', request, limitFromEnv('RATE_LIMIT_LAYOUT_PER_HOUR', 30))
+    if (!limited.ok) return tooManyRequests(limited.retryAfter)
     const furniture = list.map((f) => {
       const c = CATALOG_MAP.get(f.catalogId)!
       return {
@@ -108,7 +130,14 @@ export async function POST(request: Request) {
       `房間資料：${JSON.stringify(describeRoomForAI(room))}`,
       `家具清單：${JSON.stringify(furniture)}`,
       body.mode === 'adjust' ? '請依照使用者的需求調整目前配置（current 為目前位置）。' : '請為這些家具產生合理的初始配置。',
-      `使用者需求：${body.message?.trim() || '無特別需求，請做出舒適實用的配置。'}`,
+      ...(body.history.length
+        ? [
+            `先前的需求（除非被新需求明確取代，否則仍需遵守）：\n${body.history
+              .map((h) => `${h.role === 'user' ? '使用者' : 'AI 說明'}：${h.text}`)
+              .join('\n')}`,
+          ]
+        : []),
+      `使用者這次的需求：${body.message?.trim() || '無特別需求，請做出舒適實用的配置。'}`,
     ].join('\n\n')
     const out = await generateWithRetry(provider, { system: SYSTEM, prompt, schema: OutputSchema }, OutputSchema)
     const ids = new Set(list.map((f) => f.id))

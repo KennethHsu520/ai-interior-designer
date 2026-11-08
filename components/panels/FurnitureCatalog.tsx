@@ -6,6 +6,7 @@ import { CATALOG, CATALOG_MAP, CATEGORIES, CATEGORY_ICON, STYLES } from '@/lib/c
 import { findFreeSpot } from '@/lib/collision'
 import { roomCentroid } from '@/lib/layout'
 import { requestLayout } from '@/lib/requestLayout'
+import { UndoLayoutButton } from '@/components/scene/HistoryControls'
 import { getThumbnail } from '@/lib/thumbnails'
 import type { CatalogItem } from '@/types/room'
 
@@ -40,12 +41,10 @@ function Thumb({ item }: { item: CatalogItem }) {
 export function addToRoom(catalogId: string, x?: number, z?: number) {
   const st = useRoomStore.getState()
   const c = roomCentroid(st.room)
-  const id = st.addFurniture(catalogId, x ?? c.x, z ?? c.z)
-  const after = useRoomStore.getState()
-  const f = after.furniture.find((q) => q.id === id)
-  if (!f) return
-  const spot = findFreeSpot(after.room, f, after.furniture.filter((q) => q.id !== id), CATALOG_MAP)
-  if (spot) after.updateFurniture(id, { position: spot.position, rotationY: spot.rotationY })
+  const draft = { id: 'draft', catalogId, position: { x: x ?? c.x, y: 0, z: z ?? c.z }, rotationY: 0, scale: 1 }
+  const spot = findFreeSpot(st.room, draft, st.furniture, CATALOG_MAP)
+  const p = spot ?? draft
+  return st.addFurniture(catalogId, p.position.x, p.position.z, p.rotationY)
 }
 
 export default function FurnitureCatalog() {
@@ -55,7 +54,7 @@ export default function FurnitureCatalog() {
   const [picked, setPicked] = useState<string[]>([])
   const [request, setRequest] = useState('')
   const [busy, setBusy] = useState(false)
-  const [note, setNote] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string } | null>(null)
+  const [note, setNote] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string; revision?: number } | null>(null)
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -75,9 +74,9 @@ export default function FurnitureCatalog() {
     try {
       picked.forEach((id) => addToRoom(id))
       setPicked([])
-      const r = await requestLayout('auto', request)
+      const r = await requestLayout('auto', request, useRoomStore.getState().chat.filter((m) => m.kind !== 'error'))
       const extra = r.failed ? `有 ${r.failed} 件找不到空位，已標成紅色，請手動調整。` : r.moved ? `已自動微調 ${r.moved} 件避免碰撞。` : ''
-      setNote({ kind: r.mock ? 'warn' : 'ok', text: `${r.explanation}${extra ? ` ${extra}` : ''}` })
+      setNote({ kind: r.mock ? 'warn' : 'ok', text: `${r.explanation}${extra ? ` ${extra}` : ''}`, revision: r.revision })
     } catch (e) {
       setNote({ kind: 'error', text: e instanceof Error ? e.message : '配置失敗' })
     } finally {
@@ -162,9 +161,10 @@ export default function FurnitureCatalog() {
           {busy ? 'AI 配置中…' : `✨ AI 自動配置勾選的 ${picked.length} 件（連同房內家具）`}
         </button>
         {note && (
-          <p className={`rounded-lg px-2 py-1.5 text-xs ${note.kind === 'ok' ? 'bg-emerald-100 text-emerald-800' : note.kind === 'warn' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700'}`}>
-            {note.text}
-          </p>
+          <div className={`rounded-lg px-2 py-1.5 text-xs ${note.kind === 'ok' ? 'bg-emerald-100 text-emerald-800' : note.kind === 'warn' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700'}`}>
+            <p>{note.text}</p>
+            <UndoLayoutButton revision={note.revision} />
+          </div>
         )}
       </div>
     </div>

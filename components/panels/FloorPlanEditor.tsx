@@ -38,6 +38,7 @@ export default function FloorPlanEditor() {
   const restoreLayout = useRoomStore((s) => s.restoreLayout)
   const svgRef = useRef<SVGSVGElement>(null)
   const draggedRef = useRef(false)
+  const backgroundDownRef = useRef(false)
   const [drag, setDrag] = useState<Drag | null>(null)
   const [preview, setPreview] = useState<Vec2[] | null>(null)
   const [moveDist, setMoveDist] = useState(0)
@@ -139,6 +140,7 @@ export default function FloorPlanEditor() {
   const beginDrag = (e: React.PointerEvent, d: Drag) => {
     e.stopPropagation()
     if (e.button !== 0) return
+    backgroundDownRef.current = false
     svgRef.current?.setPointerCapture(e.pointerId)
     draggedRef.current = false
     setDrag(d)
@@ -272,14 +274,20 @@ export default function FloorPlanEditor() {
             viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
             className="h-[48vh] w-full touch-none select-none"
             style={{ cursor: drag?.kind === 'wall' ? wallCursor(drag.index) : drag ? 'grabbing' : undefined }}
+            onPointerDown={(e) => {
+              backgroundDownRef.current = e.button === 0
+            }}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
             onClick={() => {
+              const fromBackground = backgroundDownRef.current
+              backgroundDownRef.current = false
               if (draggedRef.current) {
                 draggedRef.current = false
                 return
               }
+              if (!fromBackground) return
               setSel(null)
               setNotice(null)
             }}
