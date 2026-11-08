@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'AI室內設計師',
-  description: '輸入真實尺寸、拍下每一面牆，讓 AI 辨識門窗插座，再自己擺放家具或讓 AI 幫你配置。',
+  description: '輸入真實尺寸、拍下每一面牆並標出門窗插座，再自己擺放家具或一鍵自動配置。完全免費。',
 }
 
 export const viewport: Viewport = {

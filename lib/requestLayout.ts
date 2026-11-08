@@ -2,39 +2,20 @@
 
 import { useRoomStore } from '@/store/useRoomStore'
 import { CATALOG_MAP } from './catalog'
-import { resolveAll } from './collision'
+import { heuristicLayout } from './layout'
 
-export type LayoutResult = { explanation: string; mock: boolean; failed: number; moved: number; revision: number }
+export type LayoutResult = { explanation: string; failed: number; revision: number }
 
-export type LayoutHistory = { role: 'user' | 'ai'; text: string }[]
-
-export const HISTORY_SENT = 6
-export const HISTORY_TEXT_LIMIT = 500
-
-export async function requestLayout(mode: 'auto' | 'adjust', message?: string, history: LayoutHistory = []): Promise<LayoutResult> {
+export async function requestLayout(mode: 'auto' | 'adjust'): Promise<LayoutResult> {
   const { room, furniture } = useRoomStore.getState()
   if (!furniture.length) throw new Error('房間裡還沒有家具')
-  const res = await fetch('/api/auto-layout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      room: { ...room, walls: room.walls.map((w) => ({ id: w.id, index: w.index, items: w.items })) },
-      furniture,
-      message,
-      mode,
-      history: history.slice(-HISTORY_SENT).map((h) => ({ role: h.role, text: h.text.slice(0, HISTORY_TEXT_LIMIT) })),
-    }),
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || 'AI 配置失敗')
-  const placements = data.placements as { id: string; x: number; z: number; rotationY: number }[]
-  const current = useRoomStore.getState()
-  const proposed = current.furniture.map((f) => {
-    const p = placements.find((q) => q.id === f.id)
-    return p ? { ...f, position: { x: p.x, y: 0, z: p.z }, rotationY: p.rotationY } : f
-  })
-  const { list, failed } = resolveAll(current.room, proposed, CATALOG_MAP)
-  const moved = list.filter((f, i) => f.position.x !== proposed[i].position.x || f.position.z !== proposed[i].position.z || f.rotationY !== proposed[i].rotationY).length
-  current.setFurnitureList(list)
-  return { explanation: data.explanation as string, mock: !!data.mock, failed: failed.length, moved, revision: useRoomStore.getState().revision }
+  const known = furniture.filter((f) => CATALOG_MAP.has(f.catalogId))
+  const { list, failed } = heuristicLayout(room, known, CATALOG_MAP)
+  const placed = new Map(list.map((f) => [f.id, f]))
+  const next = furniture.map((f) => placed.get(f.id) ?? f)
+  const moved = next.filter((f, i) => f.position.x !== furniture[i].position.x || f.position.z !== furniture[i].position.z || f.rotationY !== furniture[i].rotationY).length
+  useRoomStore.getState().setFurnitureList(next)
+  const explanation =
+    mode === 'adjust' ? '目前還看不懂文字需求，先用內建規則重新排列了家具。' : `已用內建規則重新排列 ${moved} 件家具，大型家具優先靠牆。`
+  return { explanation, failed: failed.length, revision: useRoomStore.getState().revision }
 }

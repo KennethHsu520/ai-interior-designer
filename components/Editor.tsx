@@ -207,7 +207,7 @@ export default function Editor() {
                 🪑 家具庫
               </button>
               <button onClick={() => setTab('chat')} className={`flex-1 py-2.5 ${tab === 'chat' ? 'border-b-2 border-violet-600 text-violet-700' : 'text-slate-500'}`}>
-                💬 跟 AI 討論
+                💬 配置需求
               </button>
             </div>
           )}

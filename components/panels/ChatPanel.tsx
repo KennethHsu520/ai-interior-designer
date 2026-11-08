@@ -5,7 +5,7 @@ import { useRoomStore } from '@/store/useRoomStore'
 import { requestLayout } from '@/lib/requestLayout'
 import { UndoLayoutButton } from '@/components/scene/HistoryControls'
 
-const WELCOME = '嗨！告訴我你想怎麼調整，例如「床靠窗」「留走道給輪椅」，我會重新安排房間裡的家具。之前說過的需求我也會記得。'
+const WELCOME = '告訴我你想怎麼調整，我會用內建規則重新安排房間裡的家具。目前還看不懂文字內容，之後會改成可以勾選的配置需求。'
 
 const SUGGESTIONS = ['床靠窗', '我要北歐風的感覺', '留走道給輪椅', '沙發面向電視櫃', '讓房間看起來更寬敞']
 
@@ -26,13 +26,12 @@ export default function ChatPanel() {
     const t = text.trim()
     if (!t || busy) return
     setInput('')
-    const history = useRoomStore.getState().chat.filter((m) => m.kind !== 'error')
     addChatMessage({ role: 'user', text: t })
     setBusy(true)
     try {
-      const r = await requestLayout('adjust', t, history)
-      const extra = r.failed ? `（有 ${r.failed} 件放不下，已標紅）` : r.moved ? `（已自動微調 ${r.moved} 件避免碰撞）` : ''
-      addChatMessage({ role: 'ai', text: `${r.explanation}${extra}`, kind: r.mock ? 'warn' : undefined, revision: r.revision })
+      const r = await requestLayout('adjust')
+      const extra = r.failed ? `（有 ${r.failed} 件放不下，已標紅）` : ''
+      addChatMessage({ role: 'ai', text: `${r.explanation}${extra}`, kind: 'warn', revision: r.revision })
     } catch (e) {
       addChatMessage({ role: 'ai', text: e instanceof Error ? e.message : '調整失敗', kind: 'error' })
     } finally {
@@ -71,7 +70,7 @@ export default function ChatPanel() {
             {m.role === 'ai' && <UndoLayoutButton revision={m.revision} />}
           </div>
         ))}
-        {busy && <div className="self-start rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-500">AI 思考中…</div>}
+        {busy && <div className="self-start rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-500">排列中…</div>}
         <div ref={endRef} />
       </div>
       {count === 0 && <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-800">房間裡還沒有家具，先到「家具庫」加入幾件吧。</p>}
@@ -97,7 +96,7 @@ export default function ChatPanel() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="跟 AI 說你的想法…"
+          placeholder="說說你的想法…"
           className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
         />
         <button disabled={busy || !input.trim() || count === 0} className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-bold text-white disabled:bg-slate-300">

@@ -2,22 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRoomStore, useSelectedWall } from '@/store/useRoomStore'
-import { bbox, clampItem, uid, wallPoint, wallSegment } from '@/lib/geometry'
+import { clampItem, uid, wallSegment } from '@/lib/geometry'
 import { compressImage, deletePhoto, loadPhoto, savePhoto } from '@/lib/image'
-import { DEFAULT_SWING, itemTypeInfo, WALL_ITEM_TYPES, type CeilingItem, type DoorSwing, type WallItem, type WallItemType } from '@/types/room'
+import { DEFAULT_SWING, itemTypeInfo, WALL_ITEM_TYPES, type DoorSwing, type WallItemType } from '@/types/room'
 import NumberField from '@/components/ui/NumberField'
 import WallElevation from './WallElevation'
-
-type Detection = {
-  type: WallItemType
-  label: string
-  location: 'wall' | 'ceiling'
-  x0: number
-  x1: number
-  y0: number
-  y1: number
-  confidence: number
-}
+import PhotoMarker from './PhotoMarker'
 
 const DEFAULT_SIZE: Record<WallItemType, { w: number; h: number; e: number }> = {
   door: { w: 0.9, h: 2.1, e: 0 },
@@ -52,16 +42,13 @@ export default function WallPhotoPanel() {
   const selectedItemId = useRoomStore((s) => s.selectedItemId)
   const selectItem = useRoomStore((s) => s.selectItem)
   const setWallPhoto = useRoomStore((s) => s.setWallPhoto)
-  const setPhotoBounds = useRoomStore((s) => s.setPhotoBounds)
-  const setWallItems = useRoomStore((s) => s.setWallItems)
   const addItem = useRoomStore((s) => s.addItem)
   const updateItem = useRoomStore((s) => s.updateItem)
   const removeItem = useRoomStore((s) => s.removeItem)
   const confirmWall = useRoomStore((s) => s.confirmWall)
-  const replaceWallCeilingItems = useRoomStore((s) => s.replaceWallCeilingItems)
   const cameraInput = useRef<HTMLInputElement>(null)
   const galleryInput = useRef<HTMLInputElement>(null)
-  const [busy, setBusy] = useState<null | 'photo' | 'ai'>(null)
+  const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string } | null>(null)
   const [newType, setNewType] = useState<WallItemType>('outlet')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -75,7 +62,7 @@ export default function WallPhotoPanel() {
 
   const onFile = async (file: File | undefined) => {
     if (!file) return
-    setBusy('photo')
+    setBusy(true)
     setMessage(null)
     setConfirmDelete(false)
     let dataUrl: string
@@ -87,7 +74,7 @@ export default function WallPhotoPanel() {
         kind: 'error',
         text: `無法讀取這個檔案（${file.name}），檔案可能已損毀或不是圖片。`,
       })
-      setBusy(null)
+      setBusy(false)
       if (cameraInput.current) cameraInput.current.value = ''
       if (galleryInput.current) galleryInput.current.value = ''
       return
@@ -97,12 +84,12 @@ export default function WallPhotoPanel() {
       const ref = await savePhoto(`wall_${wall.id}_${Date.now()}`, dataUrl)
       setWallPhoto(index, ref)
       await deletePhoto(old)
-      setMessage({ kind: 'ok', text: '照片已儲存，可以按「AI 辨識」了。' })
+      setMessage({ kind: 'ok', text: '照片已儲存。請先拖曳黃色線標出牆角，再框選門窗插座。' })
     } catch (e) {
       console.error(e)
       setMessage({ kind: 'error', text: '照片儲存失敗，可能是瀏覽器儲存空間不足或停用了網站資料。' })
     } finally {
-      setBusy(null)
+      setBusy(false)
       if (cameraInput.current) cameraInput.current.value = ''
       if (galleryInput.current) galleryInput.current.value = ''
     }
@@ -115,75 +102,6 @@ export default function WallPhotoPanel() {
     setWallPhoto(index, undefined)
     await deletePhoto(old)
     setMessage({ kind: 'ok', text: '照片已刪除，可以重新拍照或上傳。' })
-  }
-
-  const analyze = async () => {
-    if (!photo) return
-    setBusy('ai')
-    setMessage(null)
-    try {
-      if (photo.length > 5_900_000) throw new Error('照片檔案太大，請重新拍攝或換一張較小的照片')
-      const res = await fetch('/api/analyze-wall', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: photo, wallLength: length, roomHeight: height }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || '辨識失敗')
-      const dets = data.items as Detection[]
-      const wallItems: WallItem[] = dets
-        .filter((d) => d.location === 'wall')
-        .map((d) =>
-          clampItem(
-            {
-              id: uid('item'),
-              type: d.type,
-              label: d.label,
-              offset: d.x0 * length,
-              width: (d.x1 - d.x0) * length,
-              elevation: (1 - d.y1) * height,
-              height: (d.y1 - d.y0) * height,
-              confidence: d.confidence,
-              confirmed: false,
-            },
-            length,
-            height,
-          ),
-        )
-      const b = bbox(room.floor)
-      const inset = Math.min(1.2, Math.min(b.width, b.depth) / 2)
-      const ceiling: CeilingItem[] = dets
-        .filter((d) => d.location === 'ceiling')
-        .map((d) => {
-          const p = wallPoint(room.floor, index, ((d.x0 + d.x1) / 2) * length, inset)
-          return {
-            id: uid('ceil'),
-            type: d.type,
-            label: d.label,
-            x: p.x,
-            z: p.z,
-            width: Math.max(0.2, (d.x1 - d.x0) * length),
-            depth: Math.max(0.2, (d.x1 - d.x0) * length * 0.5),
-            confidence: d.confidence,
-            confirmed: false,
-            sourceWallId: wall.id,
-          }
-        })
-      const kept = wall.items.filter((it) => it.confirmed)
-      setWallItems(index, [...kept, ...wallItems])
-      if (data.wall) setPhotoBounds(index, data.wall)
-      replaceWallCeilingItems(wall.id, ceiling)
-      const text = `辨識到 ${wallItems.length} 件牆面物件${ceiling.length ? `、${ceiling.length} 件天花板物件` : ''}，請逐一檢查位置。`
-      setMessage(
-        data.mock
-          ? { kind: 'warn', text: `示範模式（尚未設定 AI_API_KEY），以下是假資料。${text}` }
-          : { kind: 'ok', text },
-      )
-    } catch (e) {
-      setMessage({ kind: 'error', text: e instanceof Error ? e.message : '辨識失敗' })
-    } finally {
-      setBusy(null)
-    }
   }
 
   const addManual = () => {
@@ -235,14 +153,14 @@ export default function WallPhotoPanel() {
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button
-            disabled={!!busy}
+            disabled={busy}
             onClick={() => cameraInput.current?.click()}
             className="rounded-lg bg-sky-600 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-500 disabled:opacity-50"
           >
             📷 拍照
           </button>
           <button
-            disabled={!!busy}
+            disabled={busy}
             onClick={() => galleryInput.current?.click()}
             className="rounded-lg border border-sky-300 bg-white px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-50"
           >
@@ -251,7 +169,7 @@ export default function WallPhotoPanel() {
         </div>
         {wall.photoUrl && !confirmDelete && (
           <button
-            disabled={!!busy}
+            disabled={busy}
             onClick={() => setConfirmDelete(true)}
             className="self-end text-xs font-medium text-red-500 hover:text-red-600 hover:underline disabled:opacity-50"
           >
@@ -273,13 +191,7 @@ export default function WallPhotoPanel() {
         )}
         <input ref={cameraInput} type="file" accept="image/*,.heic,.heif" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
         <input ref={galleryInput} type="file" accept="image/*,.heic,.heif" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-        <button
-          disabled={!photo || !!busy}
-          onClick={analyze}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-bold text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-        >
-          {busy === 'ai' ? 'AI 辨識中…（約 10～30 秒）' : busy === 'photo' ? '處理照片中…' : '✨ AI 辨識門窗插座'}
-        </button>
+        {busy && <p className="text-xs text-sky-700">處理照片中…</p>}
         {message && (
           <p
             className={`rounded-lg px-2 py-1.5 text-xs ${
@@ -291,11 +203,41 @@ export default function WallPhotoPanel() {
         )}
       </section>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-bold text-slate-800">牆面立面圖</h3>
-        <p className="text-[11px] text-slate-500">拖曳方框調整位置，選取後拖曳右下角圓點調整大小。也可以在 3D 畫面直接拖曳。</p>
-        <WallElevation wallIndex={index} length={length} height={height} items={wall.items} photo={photo} bounds={wall.photoBounds} />
-      </section>
+      {photo && wall.photoUrl && (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-bold text-slate-800">在照片上標記</h3>
+          <PhotoMarker
+            key={wall.photoUrl}
+            wallIndex={index}
+            wallId={wall.id}
+            length={length}
+            height={height}
+            items={wall.items}
+            photo={photo}
+            bounds={wall.photoBounds}
+          />
+        </section>
+      )}
+
+      {photo && wall.photoUrl ? (
+        <details className="group rounded-xl border border-slate-200">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-sm font-bold text-slate-700">
+            牆面立面圖（真實比例）
+            <span className="text-xs font-normal text-slate-400 group-open:hidden">展開 ▾</span>
+            <span className="hidden text-xs font-normal text-slate-400 group-open:inline">收起 ▴</span>
+          </summary>
+          <div className="flex flex-col gap-2 px-3 pb-3">
+            <p className="text-[11px] text-slate-500">照片中牆面範圍拉成 {length.toFixed(2)} × {height.toFixed(2)} m 的真實比例，可以直接拖曳方框微調。</p>
+            <WallElevation wallIndex={index} length={length} height={height} items={wall.items} photo={photo} bounds={wall.photoBounds} />
+          </div>
+        </details>
+      ) : (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-bold text-slate-800">牆面立面圖</h3>
+          <p className="text-[11px] text-slate-500">還沒拍照也可以用下方「＋ 新增」手動加物件，再拖曳方框調整位置，選取後拖曳右下角圓點調整大小。</p>
+          <WallElevation wallIndex={index} length={length} height={height} items={wall.items} photo={photo} bounds={wall.photoBounds} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

@@ -99,7 +99,7 @@ type Actions = {
   updateItem: (i: number, id: string, patch: Partial<WallItem>) => void
   removeItem: (i: number, id: string) => void
   confirmWall: (i: number, value: boolean) => void
-  replaceWallCeilingItems: (wallId: string, items: CeilingItem[]) => void
+  addCeilingItem: (item: CeilingItem) => void
   updateCeilingItem: (id: string, patch: Partial<CeilingItem>) => void
   removeCeilingItem: (id: string) => void
   setStage: (s: Stage) => void
@@ -216,13 +216,7 @@ export const useRoomStore = create<State & Actions>()(
             ),
           },
         })),
-      replaceWallCeilingItems: (wallId, items) =>
-        set((s) => ({
-          room: {
-            ...s.room,
-            ceilingItems: [...s.room.ceilingItems.filter((c) => c.confirmed || c.sourceWallId !== wallId), ...items.map((c) => ({ ...c, sourceWallId: wallId }))],
-          },
-        })),
+      addCeilingItem: (item) => set((s) => ({ room: { ...s.room, ceilingItems: [...s.room.ceilingItems, item] } })),
       updateCeilingItem: (id, patch) =>
         set((s) => ({ room: { ...s.room, ceilingItems: s.room.ceilingItems.map((c) => (c.id === id ? { ...c, ...patch } : c)) } })),
       removeCeilingItem: (id) => set((s) => ({ room: { ...s.room, ceilingItems: s.room.ceilingItems.filter((c) => c.id !== id) } })),

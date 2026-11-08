@@ -1,6 +1,6 @@
 import { furnitureDims } from './catalog'
-import type { CatalogItem, PlacedFurniture, Room, WallItem } from '@/types/room'
-import { bbox, doorSwingGeometry, signedArea, wallPoint, wallSegment } from './geometry'
+import type { CatalogItem, PlacedFurniture, Room } from '@/types/room'
+import { bbox, signedArea, wallPoint, wallSegment } from './geometry'
 import { resolveAll } from './collision'
 
 export function facingAngle(nx: number, nz: number) {
@@ -64,50 +64,4 @@ export function heuristicLayout(room: Room, list: PlacedFurniture[], catalog: Ma
   })
   const ordered = list.map((f) => out.find((o) => o.id === f.id) ?? f)
   return resolveAll(room, ordered, catalog)
-}
-
-function doorForAI(room: Room, i: number, it: WallItem) {
-  const g = doorSwingGeometry(room.floor, i, it, 8)
-  const a = wallPoint(room.floor, i, it.offset)
-  const b = wallPoint(room.floor, i, it.offset + it.width)
-  const r = (p: { x: number; z: number }) => ({ x: +p.x.toFixed(2), z: +p.z.toFixed(2) })
-  const approach = 0.6
-  const front = [a, b, { x: b.x + g.inward.x * approach, z: b.z + g.inward.z * approach }, { x: a.x + g.inward.x * approach, z: a.z + g.inward.z * approach }]
-  return {
-    swing: { hinge: r(g.hinge), opensInto: g.swing.side === 'in' ? 'room' : 'outside', angleDeg: g.swing.angle, radius: +it.width.toFixed(2) },
-    clearZones: (g.swing.side === 'in' ? [g.polygon, front] : [front]).map((z) => z.map(r)),
-  }
-}
-
-export function describeRoomForAI(room: Room) {
-  return {
-    unit: 'meter',
-    height: room.height,
-    floorPolygon: room.floor.map((p) => ({ x: +p.x.toFixed(3), z: +p.z.toFixed(3) })),
-    walls: room.floor.map((_, i) => {
-      const s = wallSegment(room.floor, i)
-      const w = room.walls[i]
-      return {
-        wall: i + 1,
-        start: { x: +s.a.x.toFixed(3), z: +s.a.z.toFixed(3) },
-        end: { x: +s.b.x.toFixed(3), z: +s.b.z.toFixed(3) },
-        length: +s.length.toFixed(3),
-        inwardNormal: { x: +s.normal.x.toFixed(3), z: +s.normal.z.toFixed(3) },
-        facingIntoRoomRotationY: +facingAngle(s.normal.x, s.normal.z).toFixed(4),
-        items: (w?.items ?? []).map((it) => {
-          const c = wallPoint(room.floor, i, it.offset + it.width / 2)
-          return {
-            type: it.type,
-            label: it.label,
-            center: { x: +c.x.toFixed(3), z: +c.z.toFixed(3) },
-            width: +it.width.toFixed(2),
-            elevation: +it.elevation.toFixed(2),
-            height: +it.height.toFixed(2),
-            ...(it.type === 'door' ? doorForAI(room, i, it) : {}),
-          }
-        }),
-      }
-    }),
-    ceilingItems: room.ceilingItems.map((c) => ({ type: c.type, label: c.label, x: +c.x.toFixed(2), z: +c.z.toFixed(2), width: +c.width.toFixed(2), depth: +c.depth.toFixed(2) })),
-  }
 }

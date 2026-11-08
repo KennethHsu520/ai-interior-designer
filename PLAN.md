@@ -14,7 +14,7 @@
 
 ---
 
-## [ ] 步驟 F1　移除伺服器 AI，牆面改用照片框選標記
+## [x] 步驟 F1　移除伺服器 AI，牆面改用照片框選標記
 
 **要移除的東西**
 - `app/api/analyze-wall/`、`app/api/auto-layout/`、`lib/ai/provider.ts`、`lib/rateLimit.ts`（如果有）
