@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { CATALOG } from '@/lib/catalog'
+import { MODEL_LICENSES } from '@/lib/modelLicenses'
 
 export const metadata: Metadata = { title: '素材來源與授權｜AI室內設計師' }
 
@@ -59,6 +60,22 @@ export default function LicensesPage() {
             <p className="mt-1 text-xs text-slate-500">{s.note}</p>
             <a href={s.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-sky-600 hover:underline">
               {s.url}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <h2 className="mt-8 text-lg font-bold">瀏覽器端 AI 模型與函式庫</h2>
+      <p className="mt-1 text-sm text-slate-600">以下模型只會在你同意下載後，於你的瀏覽器中執行，本站不呼叫任何付費 AI 服務。</p>
+      <ul className="mt-3 flex flex-col gap-3">
+        {MODEL_LICENSES.map((m) => (
+          <li key={m.name} className="rounded-xl border border-slate-200 bg-white p-4">
+            <h3 className="font-bold">{m.name}</h3>
+            <p className="mt-1 text-sm text-slate-600">用途：{m.use}</p>
+            <p className="text-sm text-slate-600">作者：{m.author}</p>
+            <p className="text-sm text-slate-600">授權：{m.license}</p>
+            <p className="mt-1 text-xs text-slate-500">{m.note}</p>
+            <a href={m.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-sky-600 hover:underline">
+              {m.url}
             </a>
           </li>
         ))}

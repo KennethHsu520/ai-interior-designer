@@ -4,6 +4,14 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { useRoomStore } from '@/store/useRoomStore'
 import { bbox, clampItem, uid, wallPoint } from '@/lib/geometry'
 import { itemTypeInfo, WALL_ITEM_TYPES, type PhotoBounds, type WallItem, type WallItemType } from '@/types/room'
+import { DETECT_MODEL, detectionSupported, detectObjects, giveConsent, hasConsent, suppress, type DetectProgress, type Suggestion } from '@/lib/detect/client'
+
+type DetectState =
+  | { status: 'idle' }
+  | { status: 'consent' }
+  | { status: 'working'; progress: DetectProgress }
+  | { status: 'done'; count: number }
+  | { status: 'unsupported'; reason: string }
 
 type Rect = { x0: number; x1: number; y0: number; y1: number }
 type Pt = { x: number; y: number }
@@ -25,6 +33,7 @@ const MAX_ZOOM = 5
 const MIN_GAP = 0.05
 const MIN_BOX = 0.006
 const CEILING_TYPES: WallItemType[] = ['light', 'air_conditioner']
+const BASE_THRESHOLD = 0.05
 
 const GUIDES: { key: Guide; label: string }[] = [
   { key: 'x0', label: '左牆角' },
@@ -83,6 +92,10 @@ export default function PhotoMarker({
   const [aspect, setAspect] = useState(4 / 3)
   const [op, setOp] = useState<Op | null>(null)
   const [draftBounds, setDraftBounds] = useState<PhotoBounds | null>(null)
+  const [detect, setDetect] = useState<DetectState>(() => (detectionSupported() ? { status: 'idle' } : { status: 'unsupported', reason: '瀏覽器不支援 Web Worker 或 WebAssembly' }))
+  const [rawSuggestions, setRawSuggestions] = useState<Suggestion[]>([])
+  const [threshold, setThreshold] = useState(0.25)
+  const [dismissed, setDismissed] = useState<string[]>([])
 
   const b = draftBounds ?? bounds ?? FIRST_GUESS
   const bw = Math.max(1e-6, b.x1 - b.x0)
@@ -142,33 +155,67 @@ export default function PhotoMarker({
     setPhotoBounds(wallIndex, { x0: r3(next.x0), x1: r3(next.x1), y0: r3(next.y0), y1: r3(next.y1) })
   }
 
-  const finishDraw = (rect: Rect) => {
-    if (rect.x1 - rect.x0 < MIN_BOX || rect.y1 - rect.y0 < MIN_BOX) {
-      selectItem(null)
-      return
-    }
-    const info = itemTypeInfo(tool)
+  const createFromRect = (rect: Rect, type: WallItemType, ceiling: boolean, confidence?: number) => {
+    const info = itemTypeInfo(type)
     const m = rectToMeters(rect)
-    if (ceilingMode) {
+    const extra = confidence !== undefined ? { confidence: Math.round(confidence * 100) / 100 } : {}
+    if (ceiling) {
       const b2 = bbox(floor)
       const inset = Math.min(1.2, Math.min(b2.width, b2.depth) / 2)
       const p = wallPoint(floor, wallIndex, m.offset + m.width / 2, inset)
       addCeilingItem({
         id: uid('ceil'),
-        type: tool,
+        type,
         label: info.label,
         x: round2(p.x),
         z: round2(p.z),
         width: Math.max(0.2, m.width),
         depth: Math.max(0.2, round2(m.width * 0.5)),
+        ...extra,
         confirmed: true,
         sourceWallId: wallId,
       })
       return
     }
-    const item = clampItem({ id: uid('item'), type: tool, label: info.label, ...m, confirmed: true }, length, height)
+    const item = clampItem({ id: uid('item'), type, label: info.label, ...m, ...extra, confirmed: true }, length, height)
     addItem(wallIndex, item)
     selectItem(item.id)
+  }
+
+  const finishDraw = (rect: Rect) => {
+    if (rect.x1 - rect.x0 < MIN_BOX || rect.y1 - rect.y0 < MIN_BOX) {
+      selectItem(null)
+      return
+    }
+    createFromRect(rect, tool, ceilingMode)
+  }
+
+  const suggestions = suppress(
+    rawSuggestions.filter((sg) => sg.score >= threshold && !dismissed.includes(sg.id)),
+    items.map(itemToRect),
+  )
+
+  const runDetect = async () => {
+    if (!hasConsent()) {
+      setDetect({ status: 'consent' })
+      return
+    }
+    setDetect({ status: 'working', progress: { phase: 'download', percent: 0 } })
+    try {
+      const found = await detectObjects(photo, BASE_THRESHOLD, (progress) => setDetect({ status: 'working', progress }))
+      setRawSuggestions(found)
+      setDismissed([])
+      setDetect({ status: 'done', count: found.length })
+    } catch (e) {
+      console.warn('detect failed', e)
+      setDetect({ status: 'unsupported', reason: e instanceof Error ? e.message.slice(0, 120) : '模型載入失敗' })
+    }
+  }
+
+  const acceptSuggestion = (sg: Suggestion) => {
+    const ceiling = CEILING_TYPES.includes(sg.type) && (sg.y0 + sg.y1) / 2 < b.y0 + bh * 0.08
+    createFromRect(sg, sg.type, ceiling, sg.score)
+    setDismissed((d) => [...d, sg.id])
   }
 
   const applyItemOp = (o: Extract<Op, { kind: 'item' }>, p: Pt) => {
@@ -352,6 +399,21 @@ export default function PhotoMarker({
               這是天花板上的{itemTypeInfo(tool).label}（不是裝在牆上）
             </label>
           )}
+          <DetectBar
+            state={detect}
+            count={suggestions.length}
+            found={rawSuggestions.length}
+            threshold={threshold}
+            onThreshold={setThreshold}
+            onRun={runDetect}
+            onConsent={() => {
+              giveConsent()
+              runDetect()
+            }}
+            onCancelConsent={() => setDetect({ status: 'idle' })}
+            onAcceptAll={() => suggestions.forEach(acceptSuggestion)}
+            onDismissAll={() => setDismissed((d) => [...d, ...suggestions.map((sg) => sg.id)])}
+          />
           <p className="text-[11px] text-slate-500">
             在照片上拖曳畫框新增「{itemTypeInfo(tool).label}」{ceilingMode ? '（天花板）' : ''}。點框可以選取，拖曳移動，拉四個角改大小。
           </p>
@@ -448,6 +510,44 @@ export default function PhotoMarker({
               </div>
             )
           })}
+
+          {mode === 'draw' &&
+            !hand &&
+            suggestions.map((sg) => {
+              const info = itemTypeInfo(sg.type)
+              return (
+                <div
+                  key={sg.id}
+                  className="pointer-events-none absolute rounded-sm border-2 border-dashed"
+                  style={{
+                    left: `${sg.x0 * 100}%`,
+                    top: `${sg.y0 * 100}%`,
+                    width: `${(sg.x1 - sg.x0) * 100}%`,
+                    height: `${(sg.y1 - sg.y0) * 100}%`,
+                    borderColor: info.color,
+                    background: `${info.color}1f`,
+                  }}
+                >
+                  <span
+                    className="pointer-events-auto absolute left-0 flex items-center gap-0.5 whitespace-nowrap rounded-md bg-white/95 py-0.5 pl-1.5 pr-0.5 text-[10px] font-semibold shadow"
+                    style={{ color: info.color, top: sg.y0 > 0.06 ? -24 : 2 }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    {info.label} {Math.round(sg.score * 100)}%
+                    <button onClick={() => acceptSuggestion(sg)} className="ml-0.5 rounded bg-emerald-500 px-1.5 text-white hover:bg-emerald-600" aria-label={`採用${info.label}`}>
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => setDismissed((d) => [...d, sg.id])}
+                      className="rounded px-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      aria-label={`略過${info.label}`}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                </div>
+              )
+            })}
 
           {op?.kind === 'draw' && (
             <div
@@ -563,6 +663,102 @@ export default function PhotoMarker({
               </button>
             </span>
           ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DetectBar({
+  state,
+  count,
+  found,
+  threshold,
+  onThreshold,
+  onRun,
+  onConsent,
+  onCancelConsent,
+  onAcceptAll,
+  onDismissAll,
+}: {
+  state: DetectState
+  count: number
+  found: number
+  threshold: number
+  onThreshold: (v: number) => void
+  onRun: () => void
+  onConsent: () => void
+  onCancelConsent: () => void
+  onAcceptAll: () => void
+  onDismissAll: () => void
+}) {
+  if (state.status === 'unsupported')
+    return (
+      <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-2 py-1.5 text-[11px] text-slate-500">
+        <button disabled className="shrink-0 rounded-md bg-slate-300 px-2 py-1 font-semibold text-white">
+          此裝置不支援
+        </button>
+        <span className="min-w-0 truncate" title={state.reason}>
+          自動辨識無法在這台裝置執行，請直接手動框選。
+        </span>
+      </div>
+    )
+  if (state.status === 'consent')
+    return (
+      <div className="flex flex-col gap-2 rounded-lg border border-violet-200 bg-violet-50 p-2 text-[11px] leading-relaxed text-violet-900">
+        <p>
+          第一次使用需要下載辨識模型（{DETECT_MODEL.sizeMB}，OWLv2，{DETECT_MODEL.license} 授權）。模型只在你的瀏覽器裡執行，照片不會上傳；下載後會存在瀏覽器，下次不用再下載。建議使用 Wi-Fi。
+        </p>
+        <div className="flex gap-2">
+          <button onClick={onCancelConsent} className="rounded-md border border-violet-200 bg-white px-3 py-1 font-semibold text-violet-700 hover:bg-violet-100">
+            先不要
+          </button>
+          <button onClick={onConsent} className="flex-1 rounded-md bg-violet-600 px-3 py-1 font-bold text-white hover:bg-violet-500">
+            下載並開始辨識
+          </button>
+        </div>
+      </div>
+    )
+  if (state.status === 'working') {
+    const p = state.progress
+    return (
+      <div className="flex flex-col gap-1 rounded-lg bg-violet-50 px-2 py-1.5 text-[11px] text-violet-800">
+        <span>
+          {p.phase === 'download' ? `下載模型中… ${Math.round(p.percent)}%` : '辨識中…（約 20～60 秒，視裝置而定，畫面仍可操作）'}
+                  </span>
+        <div className="h-1.5 overflow-hidden rounded-full bg-violet-100">
+          <div className={`h-full rounded-full bg-violet-500 transition-all ${p.phase === 'running' ? 'animate-pulse' : ''}`} style={{ width: `${p.phase === 'running' ? 100 : p.percent}%` }} />
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="flex flex-col gap-1.5 rounded-lg bg-violet-50 px-2 py-1.5 text-[11px] text-violet-900">
+      <div className="flex items-center gap-2">
+        <button onClick={onRun} className="shrink-0 rounded-md bg-violet-600 px-2.5 py-1 font-bold text-white hover:bg-violet-500">
+          ✨ 自動找找看
+        </button>
+        <span className="min-w-0 text-violet-700">
+          {state.status === 'done' ? (count ? `找到 ${count} 個建議（虛線框），按 ✓ 採用` : found ? '建議都處理完了；調低門檻可以看更多' : '沒有找到建議，可以手動框選') : '在瀏覽器裡辨識門窗插座，結果只是建議'}
+        </span>
+      </div>
+      {state.status === 'done' && (
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-1.5">
+            門檻
+            <input type="range" min={0.05} max={0.5} step={0.01} value={threshold} onChange={(e) => onThreshold(Number(e.target.value))} className="w-24 accent-violet-600" />
+            <span className="w-8 tabular-nums">{Math.round(threshold * 100)}%</span>
+          </label>
+          {count > 0 && (
+            <span className="ml-auto flex gap-1">
+              <button onClick={onDismissAll} className="rounded-md border border-violet-200 bg-white px-2 py-0.5 font-semibold text-violet-700 hover:bg-violet-100">
+                全部略過
+              </button>
+              <button onClick={onAcceptAll} className="rounded-md bg-emerald-600 px-2 py-0.5 font-semibold text-white hover:bg-emerald-500">
+                全部採用
+              </button>
+            </span>
+          )}
         </div>
       )}
     </div>

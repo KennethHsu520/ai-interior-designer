@@ -11,6 +11,7 @@
     "fetch-models": "tsx scripts/fetch-models.ts"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "heic-to": "1.6.6",
