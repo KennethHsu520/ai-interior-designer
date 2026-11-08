@@ -83,7 +83,7 @@
 
 ---
 
-## [ ] 步驟 F4　家具庫搬到 Supabase＋管理頁面
+## [x] 步驟 F4　家具庫搬到 Supabase＋管理頁面
 
 **現況注意**：`lib/catalog.ts` 目前是在模組載入時同步讀取 `data/catalog.json`，`CATALOG_MAP` 被 store、碰撞檢查、配置引擎等很多地方直接使用。改成從資料庫非同步載入時，要先把家具目錄改成一個 zustand store（或類似機制），網站啟動時載入，並全面檢查所有使用 `CATALOG`、`CATALOG_MAP` 的地方。
 

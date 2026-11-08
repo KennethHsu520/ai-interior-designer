@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRoomStore } from '@/store/useRoomStore'
-import { CATALOG, CATALOG_MAP, CATEGORIES, CATEGORY_ICON, STYLES } from '@/lib/catalog'
+import { CATALOG_MAP, CATEGORY_ICON, categoriesOf, stylesOf, useCatalog } from '@/lib/catalog'
 import { findFreeSpot } from '@/lib/collision'
 import { roomCentroid } from '@/lib/layout'
 import { requestLayout } from '@/lib/requestLayout'
@@ -55,15 +55,20 @@ export default function FurnitureCatalog() {
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string; revision?: number } | null>(null)
 
+  const items = useCatalog((s) => s.items)
+  const catalogStatus = useCatalog((s) => s.status)
+  const categories = useMemo(() => categoriesOf(items), [items])
+  const styles = useMemo(() => stylesOf(items), [items])
+
   const list = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return CATALOG.filter(
+    return items.filter(
       (c) =>
         (category === '全部' || c.category === category) &&
         (style === '全部' || c.styles.includes(style)) &&
         (!q || c.name.toLowerCase().includes(q) || c.category.includes(q) || c.styles.some((s) => s.includes(q)) || c.id.toLowerCase().includes(q)),
     )
-  }, [query, category, style])
+  }, [items, query, category, style])
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
@@ -84,6 +89,9 @@ export default function FurnitureCatalog() {
 
   return (
     <div className="flex flex-col gap-3">
+      {catalogStatus === 'offline' && (
+        <p className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">家具資料庫暫時連不上，先顯示內建家具；連線恢復後重新整理頁面即可看到新家具。</p>
+      )}
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -91,7 +99,7 @@ export default function FurnitureCatalog() {
         className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-300"
       />
       <div className="flex flex-wrap gap-1">
-        {['全部', ...CATEGORIES].map((c) => (
+        {['全部', ...categories].map((c) => (
           <button
             key={c}
             onClick={() => setCategory(c)}
@@ -104,7 +112,7 @@ export default function FurnitureCatalog() {
       <label className="flex items-center gap-2 text-xs text-slate-500">
         風格
         <select value={style} onChange={(e) => setStyle(e.target.value)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs">
-          {['全部', ...STYLES].map((s) => (
+          {['全部', ...styles].map((s) => (
             <option key={s}>{s}</option>
           ))}
         </select>

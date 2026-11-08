@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRoomStore } from '@/store/useRoomStore'
-import { CATALOG_MAP, furnitureColors } from '@/lib/catalog'
+import { CATALOG_MAP, furnitureColors, useCatalog } from '@/lib/catalog'
 import { rolesOf, roleLabel, SWATCHES, type Role } from '@/lib/procedural'
 import NumberField from '@/components/ui/NumberField'
 import { snapAngle } from '@/lib/collision'
@@ -38,6 +38,7 @@ export default function SelectedFurniturePanel({ floating = false }: { floating?
   const [role, setRole] = useState<Role>('main')
   const room = useRoomStore((s) => s.room)
   const allFurniture = useRoomStore((s) => s.furniture)
+  useCatalog((s) => s.version)
 
   if (!id || !f) return null
   const item = CATALOG_MAP.get(f.catalogId)

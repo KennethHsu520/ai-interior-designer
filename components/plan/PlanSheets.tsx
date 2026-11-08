@@ -3,7 +3,8 @@
 import { useMemo, useSyncExternalStore, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRoomStore } from '@/store/useRoomStore'
-import { CATALOG_MAP } from '@/lib/catalog'
+import { CATALOG_MAP, useCatalog } from '@/lib/catalog'
+import { useCatalogLoader } from '@/lib/catalogLoader'
 import { cornerAngle, wallSegment } from '@/lib/geometry'
 import { cm, furnitureSchedule, roomSummary, swingText, tagWallItems, type Tagged } from '@/lib/planData'
 import { buildDxf } from '@/lib/dxf'
@@ -63,13 +64,16 @@ export default function PlanSheets() {
   const client = useSyncExternalStore(noop, () => true, () => false)
   const room = useRoomStore((s) => s.room)
   const furniture = useRoomStore((s) => s.furniture)
+  const catalogVersion = useCatalog((s) => s.version)
+  useCatalogLoader()
 
   const data = useMemo(() => {
+    void catalogVersion
     const tags = tagWallItems(room)
     const schedule = furnitureSchedule(room, furniture, CATALOG_MAP)
     const summary = roomSummary(room)
     return { tags, schedule, summary }
-  }, [room, furniture])
+  }, [room, furniture, catalogVersion])
 
   if (!client) return null
 

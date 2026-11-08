@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { allWallsConfirmed, useRoomStore } from '@/store/useRoomStore'
 import { validateFloor } from '@/lib/geometry'
 import { CATALOG_MAP } from '@/lib/catalog'
+import { useCatalogLoader } from '@/lib/catalogLoader'
 import { exportRoom, importRoom } from '@/lib/io'
 import RoomScene from './scene/RoomScene'
 import ViewControls from './scene/ViewControls'
@@ -44,6 +45,7 @@ export default function Editor() {
   const wide = useWideScreen()
   const hasSelection = useRoomStore((s) => s.selectedFurnitureId !== null)
   useFurnitureShortcuts()
+  useCatalogLoader()
   useHistoryShortcuts(stage === 'furniture')
 
   const ready = allWallsConfirmed(room) && validateFloor(room.floor).length === 0

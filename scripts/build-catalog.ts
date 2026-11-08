@@ -4,6 +4,7 @@ import path from 'node:path'
 import { NodeIO } from '@gltf-transform/core'
 import { getBounds } from '@gltf-transform/functions'
 import type { CatalogItem } from '../types/room'
+import { fitModel, measureBounds } from '../lib/modelMeasure'
 
 const ROOT = process.cwd()
 const MODELS = path.join(ROOT, 'public', 'models')
@@ -155,8 +156,6 @@ function kenneyMeta(base: string): Meta | null {
   return { name: `${rule.name}（${base}）`, ...rule.meta }
 }
 
-const r3 = (n: number) => Math.round(n * 1000) / 1000
-
 async function main() {
   const io = new NodeIO()
   const items: CatalogItem[] = []
@@ -174,7 +173,6 @@ async function main() {
       const { min, max } = getBounds(scene)
       const raw = { width: max[0] - min[0], height: max[1] - min[1], depth: max[2] - min[2] }
       let meta: Meta | null = null
-      let scale = 1
       if (source === 'kaykit') meta = KAYKIT[base] ?? null
       if (source === 'kenney') meta = kenneyMeta(base)
       if (source === 'polyhaven') {
@@ -189,8 +187,8 @@ async function main() {
         console.warn('skip (no metadata)', source, f)
         continue
       }
-      const rawFit = raw[meta.fit] || 1
-      scale = meta.value / rawFit
+      const fitted = fitModel(raw, meta.fit, meta.value)
+      const measured = measureBounds(min, max)
       items.push({
         id: `${source}/${base}`,
         name: meta.name,
@@ -199,10 +197,10 @@ async function main() {
         source: SOURCES[source].label,
         license: SOURCES[source].license,
         file: `/models/${source}/${f}`,
-        size: { width: r3(raw.width * scale), depth: r3(raw.depth * scale), height: r3(raw.height * scale) },
-        rawSize: { width: r3(raw.width), depth: r3(raw.depth), height: r3(raw.height) },
-        rawMin: { x: r3(min[0]), y: r3(min[1]), z: r3(min[2]) },
-        scale: Math.round(scale * 10000) / 10000,
+        size: fitted.size,
+        rawSize: measured.rawSize,
+        rawMin: measured.rawMin,
+        scale: fitted.scale,
       })
     }
   }

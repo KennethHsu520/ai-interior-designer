@@ -2,6 +2,7 @@
 
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import type { CatalogItem } from '@/types/room'
 import { loadPhoto, savePhoto, PHOTO_PREFIX } from './image'
 import { buildProcedural } from './proceduralThree'
@@ -13,6 +14,7 @@ const pending = new Map<string, Promise<string | null>>()
 let queue: Promise<unknown> = Promise.resolve()
 let renderer: THREE.WebGLRenderer | null = null
 const loader = new GLTFLoader()
+loader.setMeshoptDecoder(MeshoptDecoder)
 
 function getRenderer() {
   if (!renderer) {
@@ -24,7 +26,7 @@ function getRenderer() {
   return renderer
 }
 
-async function render(item: CatalogItem): Promise<string> {
+export async function renderThumbnail(item: CatalogItem): Promise<string> {
   const model = item.procedural ? buildProcedural(item.procedural.kind, item.size, item.procedural.colors) : (await loader.loadAsync(item.file)).scene
   const scene = new THREE.Scene()
   scene.add(new THREE.HemisphereLight('#ffffff', '#8a8070', 2.2))
@@ -57,6 +59,7 @@ async function render(item: CatalogItem): Promise<string> {
 }
 
 export function getThumbnail(item: CatalogItem): Promise<string | null> {
+  if (item.thumbnail) return Promise.resolve(item.thumbnail)
   const cached = memory.get(item.id)
   if (cached) return Promise.resolve(cached)
   const p = pending.get(item.id)
@@ -68,7 +71,7 @@ export function getThumbnail(item: CatalogItem): Promise<string | null> {
       memory.set(item.id, stored)
       return stored
     }
-    const run = queue.then(() => render(item))
+    const run = queue.then(() => renderThumbnail(item))
     queue = run.catch(() => null)
     try {
       const url = await run

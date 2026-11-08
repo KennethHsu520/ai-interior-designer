@@ -112,6 +112,10 @@ export type CatalogItem = {
   scale: number
   thumbnail?: string
   procedural?: { kind: string; colors: Record<string, string> }
+  author?: string
+  sourceUrl?: string
+  published?: boolean
+  custom?: boolean
 }
 
 export type Placement = {

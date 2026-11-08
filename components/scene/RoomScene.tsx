@@ -8,7 +8,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { useRoomStore } from '@/store/useRoomStore'
 import { bbox, wallSegment } from '@/lib/geometry'
-import { CATALOG_MAP } from '@/lib/catalog'
+import { CATALOG_MAP, useCatalog } from '@/lib/catalog'
 import { useCollisions } from '@/lib/useCollisions'
 import { itemTypeInfo } from '@/types/room'
 import Wall from './Wall'
@@ -223,6 +223,7 @@ function KeyboardMove() {
 function FurnitureLayer() {
   const furniture = useRoomStore((s) => s.furniture)
   const collisions = useCollisions()
+  useCatalog((s) => s.version)
   return (
     <group>
       {furniture.map((f) => {
