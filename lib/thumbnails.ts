@@ -58,30 +58,39 @@ export async function renderThumbnail(item: CatalogItem): Promise<string> {
   return url
 }
 
+function cacheId(item: CatalogItem) {
+  if (!item.custom) return item.id
+  const sig = JSON.stringify([item.size, item.procedural?.colors ?? null, item.file])
+  let h = 0
+  for (let i = 0; i < sig.length; i++) h = (h * 31 + sig.charCodeAt(i)) | 0
+  return `${item.id}_${(h >>> 0).toString(36)}`
+}
+
 export function getThumbnail(item: CatalogItem): Promise<string | null> {
   if (item.thumbnail) return Promise.resolve(item.thumbnail)
-  const cached = memory.get(item.id)
+  const id = cacheId(item)
+  const cached = memory.get(id)
   if (cached) return Promise.resolve(cached)
-  const p = pending.get(item.id)
+  const p = pending.get(id)
   if (p) return p
-  const key = `thumb_${VERSION}_${item.id}`
+  const key = `thumb_${VERSION}_${id}`
   const job = (async () => {
     const stored = await loadPhoto(`${PHOTO_PREFIX}${key}`)
     if (stored) {
-      memory.set(item.id, stored)
+      memory.set(id, stored)
       return stored
     }
     const run = queue.then(() => renderThumbnail(item))
     queue = run.catch(() => null)
     try {
       const url = await run
-      memory.set(item.id, url)
+      memory.set(id, url)
       savePhoto(key, url).catch(() => {})
       return url
     } catch {
       return null
     }
   })()
-  pending.set(item.id, job)
+  pending.set(id, job)
   return job
 }

@@ -6,6 +6,7 @@ import { migrateCeilingItem } from '@/types/room'
 import type { CeilingItem, DoorSwing, PhotoBounds, PlacedFurniture, Room, Vec2, Wall, WallItem } from '@/types/room'
 import { loadPhoto, PHOTO_PREFIX, savePhoto } from './image'
 import { validateFloor } from './geometry'
+import { saveManyCustomFurniture, useCustomFurniture, type CustomFurniture } from './customFurniture'
 
 type SameShape<A, B> = [A] extends [B]
   ? [B] extends [A]
@@ -83,8 +84,20 @@ const FurnitureSchema = z.object({
   colors: z.record(z.string(), z.string()).optional(),
 })
 
+const CustomSchema = z.object({
+  id: z.string().regex(/^custom_/),
+  name: z.string(),
+  kind: z.string(),
+  size: z.object({ width: z.number(), depth: z.number(), height: z.number() }),
+  colors: z.record(z.string(), z.string()),
+  photoRef: z.string().optional(),
+  modelRef: z.string().optional(),
+  createdAt: z.number(),
+})
+
 const schemaMatchesTypes: [
   SameShape<z.output<typeof Vec2Schema>, Vec2>,
+  SameShape<z.output<typeof CustomSchema>, CustomFurniture>,
   SameShape<z.output<typeof SwingSchema>, DoorSwing>,
   SameShape<z.output<typeof ItemSchema>, WallItem>,
   SameShape<z.output<typeof CeilingSchema>, CeilingItem>,
@@ -92,7 +105,7 @@ const schemaMatchesTypes: [
   SameShape<z.output<typeof WallSchema>, Wall>,
   SameShape<z.output<typeof RoomSchema>, Room>,
   SameShape<z.output<typeof FurnitureSchema>, PlacedFurniture>,
-] = [true, true, true, true, true, true, true, true]
+] = [true, true, true, true, true, true, true, true, true]
 void schemaMatchesTypes
 
 const FileSchema = z.object({
@@ -101,6 +114,7 @@ const FileSchema = z.object({
   room: RoomSchema,
   furniture: z.array(FurnitureSchema).default([]),
   photos: z.record(z.string(), z.string()).default({}),
+  custom: z.array(CustomSchema).default([]),
 })
 
 const LegacyFileSchema = FileSchema.extend({
@@ -132,7 +146,16 @@ export async function exportRoom(includePhotos = true) {
       }
     }
   }
-  const json = JSON.stringify({ app: 'ai-interior-designer', version: FILE_VERSION, exportedAt: new Date().toISOString(), room, furniture, photos }, null, 2)
+  const used = new Set(furniture.map((f) => f.catalogId))
+  const custom = useCustomFurniture.getState().list.filter((c) => used.has(c.id))
+  for (const c of custom) {
+    for (const ref of [c.photoRef, c.modelRef]) {
+      if (!ref?.startsWith(PHOTO_PREFIX) || photos[ref]) continue
+      const data = await loadPhoto(ref)
+      if (data) photos[ref] = data
+    }
+  }
+  const json = JSON.stringify({ app: 'ai-interior-designer', version: FILE_VERSION, exportedAt: new Date().toISOString(), room, furniture, photos, custom }, null, 2)
   const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -154,7 +177,8 @@ export async function importRoom(file: File) {
   if (!data) throw new Error('檔案格式不正確，請選擇本網站匯出的房間檔')
   if (validateFloor(data.room.floor).length) throw new Error('檔案中的房間格局不正確')
   for (const [ref, dataUrl] of Object.entries(data.photos)) {
-    if (ref.startsWith(PHOTO_PREFIX) && dataUrl.startsWith('data:image/')) await savePhoto(ref.slice(PHOTO_PREFIX.length), dataUrl)
+    if (ref.startsWith(PHOTO_PREFIX) && /^data:(image|model)\//.test(dataUrl)) await savePhoto(ref.slice(PHOTO_PREFIX.length), dataUrl)
   }
+  if (data.custom.length) await saveManyCustomFurniture(data.custom)
   useRoomStore.getState().importData({ room: data.room, furniture: data.furniture })
 }

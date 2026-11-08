@@ -5,6 +5,7 @@ import type { CatalogItem } from '@/types/room'
 import { setRemoteModels } from './catalog'
 import { FURNITURE_COLUMNS, rowToItem, type FurnitureRow } from './catalogDb'
 import { getSupabase } from './supabase'
+import { loadCustomFurniture } from './customFurniture'
 
 const CACHE_KEY = 'furniture-catalog-cache-v1'
 const TIMEOUT_MS = 8000
@@ -68,5 +69,6 @@ export function loadCatalog(force = false) {
 export function useCatalogLoader() {
   useEffect(() => {
     loadCatalog()
+    loadCustomFurniture()
   }, [])
 }

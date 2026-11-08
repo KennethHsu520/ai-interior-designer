@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRoomStore } from '@/store/useRoomStore'
-import { CATALOG_MAP, CATEGORY_ICON, categoriesOf, stylesOf, useCatalog } from '@/lib/catalog'
+import { CATALOG_MAP, CATEGORY_ICON, categoriesOf, inCategory, MY_CATEGORY, stylesOf, useCatalog } from '@/lib/catalog'
+import { deleteCustomFurniture, getCustomFurniture, type CustomFurniture } from '@/lib/customFurniture'
+import CustomFurnitureDialog from './CustomFurnitureDialog'
 import { findFreeSpot } from '@/lib/collision'
 import { roomCentroid } from '@/lib/layout'
 import { requestLayout } from '@/lib/requestLayout'
@@ -64,11 +66,23 @@ export default function FurnitureCatalog() {
     const q = query.trim().toLowerCase()
     return items.filter(
       (c) =>
-        (category === '全部' || c.category === category) &&
+        inCategory(c, category) &&
         (style === '全部' || c.styles.includes(style)) &&
         (!q || c.name.toLowerCase().includes(q) || c.category.includes(q) || c.styles.some((s) => s.includes(q)) || c.id.toLowerCase().includes(q)),
     )
   }, [items, query, category, style])
+
+  const [dialog, setDialog] = useState<{ editing: CustomFurniture | null } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const placed = useRoomStore((s) => s.furniture)
+
+  const removeCustom = async (id: string) => {
+    const st = useRoomStore.getState()
+    const inRoom = st.furniture.filter((f) => f.catalogId === id)
+    if (inRoom.length) st.setFurnitureList(st.furniture.filter((f) => f.catalogId !== id))
+    await deleteCustomFurniture(id)
+    setConfirmDelete(null)
+  }
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
@@ -91,6 +105,21 @@ export default function FurnitureCatalog() {
     <div className="flex flex-col gap-3">
       {catalogStatus === 'offline' && (
         <p className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">家具資料庫暫時連不上，先顯示內建家具；連線恢復後重新整理頁面即可看到新家具。</p>
+      )}
+      <button
+        onClick={() => setDialog({ editing: null })}
+        className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-300 bg-violet-50 px-3 py-2.5 text-sm font-semibold text-violet-700 hover:bg-violet-100"
+      >
+        📸 找不到？拍照自己做一件
+      </button>
+      {dialog && (
+        <CustomFurnitureDialog
+          editing={dialog.editing}
+          onClose={(saved) => {
+            setDialog(null)
+            if (saved && !dialog.editing) setCategory(MY_CATEGORY)
+          }}
+        />
       )}
       <input
         value={query}
@@ -147,6 +176,38 @@ export default function FurnitureCatalog() {
               >
                 ＋
               </button>
+              {c.custom && confirmDelete !== c.id && (
+                <span className="flex gap-1">
+                  <button
+                    onClick={() => {
+                      const rec = getCustomFurniture(c.id)
+                      if (rec) setDialog({ editing: rec })
+                    }}
+                    className="flex-1 rounded-md border border-slate-200 py-0.5 text-[10px] text-slate-600 hover:bg-slate-50"
+                  >
+                    編輯
+                  </button>
+                  <button onClick={() => setConfirmDelete(c.id)} className="flex-1 rounded-md border border-red-200 py-0.5 text-[10px] text-red-600 hover:bg-red-50">
+                    刪除
+                  </button>
+                </span>
+              )}
+              {c.custom && confirmDelete === c.id && (
+                <span className="flex flex-col gap-1 rounded-md bg-red-50 p-1 text-[10px] text-red-700">
+                  {(() => {
+                    const n = placed.filter((f) => f.catalogId === c.id).length
+                    return n ? `房間裡有 ${n} 件，刪除後也會從房間移除（可按復原）` : '確定刪除？'
+                  })()}
+                  <span className="flex gap-1">
+                    <button onClick={() => setConfirmDelete(null)} className="flex-1 rounded bg-white py-0.5 text-slate-600">
+                      取消
+                    </button>
+                    <button onClick={() => removeCustom(c.id)} className="flex-1 rounded bg-red-600 py-0.5 font-semibold text-white">
+                      刪除
+                    </button>
+                  </span>
+                </span>
+              )}
             </div>
           )
         })}

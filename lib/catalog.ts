@@ -67,8 +67,15 @@ export function furnitureColors(f: Pick<PlacedFurniture, 'colors'>, item: Catalo
 
 export const CATEGORY_ORDER = ['我的家具', '床', '沙發', '桌', '椅', '櫃', '燈', '家電', '衛浴', '地毯', '植物', '裝飾']
 
+export const MY_CATEGORY = '我的家具'
+
+export function inCategory(c: CatalogItem, category: string) {
+  return category === '全部' || (category === MY_CATEGORY ? !!c.custom : c.category === category)
+}
+
 export function categoriesOf(items: CatalogItem[]) {
   const set = new Set(items.map((c) => c.category))
+  if (items.some((c) => c.custom)) set.add(MY_CATEGORY)
   return [...CATEGORY_ORDER.filter((c) => set.has(c)), ...Array.from(set).filter((c) => !CATEGORY_ORDER.includes(c))]
 }
 

@@ -56,7 +56,7 @@ function Model({ item, stretch, tint }: { item: CatalogItem; stretch: [number, n
   )
 }
 
-function ProceduralModel({ kind, size, colors }: { kind: string; size: { width: number; depth: number; height: number }; colors: Record<string, string> }) {
+export function ProceduralModel({ kind, size, colors }: { kind: string; size: { width: number; depth: number; height: number }; colors: Record<string, string> }) {
   const key = JSON.stringify([size, colors])
   const group = useMemo(() => {
     const [sz, col] = JSON.parse(key)
