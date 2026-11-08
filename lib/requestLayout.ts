@@ -2,20 +2,23 @@
 
 import { useRoomStore } from '@/store/useRoomStore'
 import { CATALOG_MAP } from './catalog'
-import { heuristicLayout } from './layout'
+import { autoLayout } from './layoutEngine'
 
 export type LayoutResult = { explanation: string; failed: number; revision: number }
 
-export async function requestLayout(mode: 'auto' | 'adjust'): Promise<LayoutResult> {
-  const { room, furniture } = useRoomStore.getState()
+export async function requestLayout(): Promise<LayoutResult> {
+  const { room, furniture, layoutPrefs } = useRoomStore.getState()
   if (!furniture.length) throw new Error('房間裡還沒有家具')
-  const known = furniture.filter((f) => CATALOG_MAP.has(f.catalogId))
-  const { list, failed } = heuristicLayout(room, known, CATALOG_MAP)
-  const placed = new Map(list.map((f) => [f.id, f]))
-  const next = furniture.map((f) => placed.get(f.id) ?? f)
-  const moved = next.filter((f, i) => f.position.x !== furniture[i].position.x || f.position.z !== furniture[i].position.z || f.rotationY !== furniture[i].rotationY).length
-  useRoomStore.getState().setFurnitureList(next)
-  const explanation =
-    mode === 'adjust' ? '目前還看不懂文字需求，先用內建規則重新排列了家具。' : `已用內建規則重新排列 ${moved} 件家具，大型家具優先靠牆。`
-  return { explanation, failed: failed.length, revision: useRoomStore.getState().revision }
+  await new Promise((r) => setTimeout(r, 0))
+  const out = autoLayout(room, furniture, CATALOG_MAP, layoutPrefs)
+  const moved = out.list.filter((f, i) => {
+    const o = furniture[i]
+    return Math.abs(f.position.x - o.position.x) > 0.005 || Math.abs(f.position.z - o.position.z) > 0.005 || Math.abs(f.rotationY - o.rotationY) > 0.001
+  }).length
+  useRoomStore.getState().setFurnitureList(out.list)
+  const parts = [moved ? `重新配置了 ${moved} 件家具` : '目前的配置已經是最佳結果，沒有移動家具']
+  if (out.met.length) parts.push(`已做到：${out.met.join('、')}`)
+  if (out.unmet.length) parts.push(`沒辦法同時做到：${out.unmet.join('、')}`)
+  if (out.failed.length) parts.push(`有 ${out.failed.length} 件找不到空位，已標成紅色`)
+  return { explanation: `${parts.join('。')}。`, failed: out.failed.length, revision: useRoomStore.getState().revision }
 }

@@ -73,9 +73,8 @@ export default function FurnitureCatalog() {
     try {
       picked.forEach((id) => addToRoom(id))
       setPicked([])
-      const r = await requestLayout('auto')
-      const extra = r.failed ? ` 有 ${r.failed} 件找不到空位，已標成紅色，請手動調整。` : ''
-      setNote({ kind: r.failed ? 'warn' : 'ok', text: `${r.explanation}${extra}`, revision: r.revision })
+      const r = await requestLayout()
+      setNote({ kind: r.failed ? 'warn' : 'ok', text: r.explanation, revision: r.revision })
     } catch (e) {
       setNote({ kind: 'error', text: e instanceof Error ? e.message : '配置失敗' })
     } finally {

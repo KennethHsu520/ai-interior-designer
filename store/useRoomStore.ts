@@ -17,6 +17,7 @@ import {
 } from '@/lib/geometry'
 import { CATALOG_MAP } from '@/lib/catalog'
 import { clampIntoRoom } from '@/lib/collision'
+import { DEFAULT_PREFS, type LayoutPrefs } from '@/lib/layoutEngine'
 
 export type Stage = 'room' | 'furniture'
 
@@ -74,6 +75,7 @@ type State = {
   dragging: boolean
   floorEditorOpen: boolean
   chat: ChatMessage[]
+  layoutPrefs: LayoutPrefs
 } & HistoryState
 
 type Actions = {
@@ -114,6 +116,7 @@ type Actions = {
   redoFurniture: () => void
   addChatMessage: (m: ChatMessage) => void
   clearChat: () => void
+  setLayoutPrefs: (p: LayoutPrefs) => void
   importData: (data: { room: Room; furniture?: PlacedFurniture[] }) => void
   resetAll: () => void
 }
@@ -131,6 +134,7 @@ export const useRoomStore = create<State & Actions>()(
       dragging: false,
       floorEditorOpen: false,
       chat: [],
+      layoutPrefs: DEFAULT_PREFS,
       ...emptyHistory(),
 
       setSize: (width, depth) =>
@@ -287,6 +291,7 @@ export const useRoomStore = create<State & Actions>()(
         }),
       addChatMessage: (m) => set((s) => ({ chat: [...s.chat, m].slice(-CHAT_LIMIT) })),
       clearChat: () => set({ chat: [] }),
+      setLayoutPrefs: (layoutPrefs) => set({ layoutPrefs }),
       importData: (data) =>
         set({
           room: { ...data.room, walls: syncWalls(data.room.floor, data.room.walls), ceilingItems: data.room.ceilingItems ?? [] },
@@ -303,6 +308,7 @@ export const useRoomStore = create<State & Actions>()(
           room: createDefaultRoom(),
           furniture: [],
           chat: [],
+          layoutPrefs: DEFAULT_PREFS,
           ...emptyHistory(),
           stage: 'room',
           selectedWall: null,
@@ -321,7 +327,7 @@ export const useRoomStore = create<State & Actions>()(
         }
         return state as State
       },
-      partialize: (s) => ({ room: s.room, furniture: s.furniture, stage: s.stage, chat: s.chat }),
+      partialize: (s) => ({ room: s.room, furniture: s.furniture, stage: s.stage, chat: s.chat, layoutPrefs: s.layoutPrefs }),
     },
   ),
 )
