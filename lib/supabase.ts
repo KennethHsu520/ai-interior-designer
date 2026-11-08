@@ -2,8 +2,11 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const PUBLIC_URL = 'https://qyajbakbsgxukemyhvcz.supabase.co'
+const PUBLIC_KEY = 'sb_publishable_0Nd3vsgEcIvY_xXko3S9Cw_enC-pMsk'
+
+const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || PUBLIC_URL
+const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || PUBLIC_KEY
 
 let client: SupabaseClient | null = null
 

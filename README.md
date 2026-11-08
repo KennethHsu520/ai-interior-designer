@@ -45,7 +45,7 @@ npm run dev
    ```
 4. 匯入內建家具：在 `.env.local` 暫時加上 `SUPABASE_SERVICE_ROLE_KEY`（只給本機腳本用，絕對不要提交或放進前端）後執行 `npm run migrate-catalog`；或執行 `npx tsx scripts/migrate-catalog.ts --sql` 把輸出的 SQL 貼到 SQL Editor。
 5. 管理員：打開 `/admin` 註冊帳號並完成信箱確認，登入後頁面會顯示一行 SQL，到 SQL Editor 執行即可成為管理員。
-6. 部署到 Vercel 時，在 **Project Settings → Environment Variables** 加上第 3 步的兩個變數（不要加 service role key）；並在 Supabase **Authentication → URL Configuration** 把網站網址加入 Site URL 與 Redirect URLs，確認信的連結才會回到正確的網站。
+6. `lib/supabase.ts` 內建本站專案的網址與 publishable 公開金鑰（本來就會出現在每個訪客的瀏覽器，權限由 RLS 控管），所以部署到 Vercel 不需要額外設定；改用自己的專案時，在 **Project Settings → Environment Variables** 加上第 3 步的兩個變數即可覆蓋（不要加 service role key）。並在 Supabase **Authentication → URL Configuration** 把網站網址加入 Site URL 與 Redirect URLs，確認信的連結才會回到正確的網站。
 
 ### 免費方案注意事項
 - **閒置一週會暫停**：資料庫連不上時，網站自動改用內建家具並在家具庫上方顯示提示，不影響使用。到 Supabase 後台按 Restore 即可恢復。
