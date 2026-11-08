@@ -31,8 +31,10 @@
 | 3D | three.js + @react-three/fiber + @react-three/drei |
 | 狀態管理 | zustand（含 persist 存到 localStorage） |
 | 樣式 | Tailwind CSS |
-| AI 影像辨識 | 照片框選標記為主；選用的瀏覽器端模型（Transformers.js）作為自動建議 |
-| 家具配置 | 前端規則引擎（`lib/layout.ts`） |
+| AI 影像辨識 | 照片框選標記為主；OWLv2（Transformers.js 3.8，Web Worker、WASM）作為自動建議 |
+| 家具配置 | 前端規則引擎（`lib/layoutEngine.ts`），需求選項存在 store |
+| 照片生成 3D（實驗） | U²-Net 去背＋TripoSR（ONNX Runtime Web 1.30 WebGPU，從 CDN 載入），模型快取在 OPFS |
+| 模型處理 | glTF-Transform＋meshoptimizer（管理頁上傳壓縮） |
 | 部署 | Vercel 免費方案（Hobby 限非商業用途） |
 | 資料庫 | Supabase 免費方案：家具庫與管理員帳號；之後再加使用者帳號與房間 |
 
@@ -158,44 +160,42 @@ type PlacedFurniture = {
 ## 資料夾結構
 ```
 app/
-  page.tsx
-  api/analyze-wall/route.ts
-  api/auto-layout/route.ts
-  licenses/page.tsx
+  page.tsx                 主畫面（AppShell → Editor）
+  admin/page.tsx           家具庫管理（Supabase Auth）
+  licenses/page.tsx        素材與模型授權（從資料庫讀取）
+  plan/page.tsx            設計圖輸出（PDF／DXF）
 components/
-  scene/RoomScene.tsx
-  scene/Wall.tsx
-  scene/WallItemMesh.tsx
-  scene/FurnitureMesh.tsx
-  panels/RoomSizePanel.tsx
-  panels/FloorPlanEditor.tsx
-  panels/WallPhotoPanel.tsx
-  panels/FurnitureCatalog.tsx
-  panels/ChatPanel.tsx
+  Editor.tsx
+  admin/                   AdminApp、FurnitureList、NewFurniture、ItemFields
+  scene/                   RoomScene、Wall、WallItemMesh、FurnitureMesh、HistoryControls、ViewControls…
+  panels/                  RoomSizePanel、FloorPlanEditor、WallPhotoPanel、PhotoMarker、WallElevation、
+                           FurnitureCatalog、CustomFurnitureDialog、SelectedFurniturePanel、ChatPanel（配置需求）
+  plan/                    設計圖
 lib/
-  ai/provider.ts
-  geometry.ts
-  collision.ts
-  image.ts
-store/
-  useRoomStore.ts
-types/
-  room.ts
-data/
-  catalog.json
+  catalog.ts               即時家具目錄（內建＋資料庫＋自製）與 zustand store
+  catalogLoader.ts         從 Supabase 載入、快取、連不上時退回內建
+  catalogDb.ts、supabase.ts、adminApi.ts、modelProcess.ts、modelMeasure.ts
+  customFurniture.ts       自製家具（IndexedDB）
+  layoutEngine.ts          規則配置引擎與需求選項
+  detect/                  OWLv2 自動建議（worker）
+  recon/                   照片生成 3D（worker、marching cubes）
+  geometry.ts、collision.ts、image.ts、io.ts、modelUrl.ts …
+store/useRoomStore.ts      房間、家具、復原歷史、對話與需求（persist）
+types/room.ts
+data/catalog.json          內建家具（資料庫連不上時使用）
 public/models/
-scripts/
-  build-catalog.ts
+scripts/                   build-catalog.ts、migrate-catalog.ts、fetch-models.ts
+supabase/migrations/       資料表、RLS、Storage bucket
 ```
 
 ## 環境變數（`.env.local`，不要提交到 git）
 ```
-AI_PROVIDER=
-AI_API_KEY=
-AI_MODEL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=   只給本機 scripts/migrate-catalog.ts 用，絕不放前端
 ```
 
 ## 注意事項
 - 單張照片無法得到精確尺寸，房間尺寸以使用者輸入為準，AI 只負責判斷「牆上有什麼、大概在哪」，最後一定要讓使用者確認
-- AI API 通常需要付費，網站本身免費；開發時注意呼叫次數
+- 不呼叫任何付費 AI API；瀏覽器端模型下載前一定要說明大小並取得使用者同意
 - 手機瀏覽器也要能操作（觸控旋轉、拍照）

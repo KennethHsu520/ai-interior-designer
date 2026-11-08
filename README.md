@@ -5,10 +5,24 @@
 ## 功能
 - 3D 空白房間，輸入真實尺寸（長、寬、高），或在 2D 俯視圖拖曳頂點做出 L 型等格局
 - 點擊牆面拍照，在照片上標出牆角，再框選門、窗、開關、插座、電燈、冷氣與現有家具（支援手機觸控與放大）
+- 「自動找找看」：在瀏覽器裡跑 OWLv2 模型，自動建議門窗插座的位置（虛線框），按 ✓ 才會採用
 - 在立面圖或 3D 中拖曳、縮放、改類型、刪除、新增，逐面牆確認
-- 家具素材庫 85 件（CC0 授權），可依分類、風格篩選與搜尋
-- 手動拖曳擺放（碰撞檢查：穿牆、重疊、擋門會變紅）／用內建規則自動配置，可復原與重做
-- 自動存到瀏覽器，可匯出／匯入房間 JSON（含照片）
+- 家具素材庫近千件（85 件 CC0 模型＋程式生成家具），可依分類、風格篩選與搜尋；資料放在 Supabase，管理員可在 `/admin` 上架新家具
+- 手動拖曳擺放（碰撞檢查：穿牆、重疊、擋門會變紅），可復原與重做
+- 規則引擎自動配置：靠牆、留走道、不擋門與插座、床頭避窗；可勾選「床靠窗」「書桌靠窗」「留輪椅動線」等需求，也能用一句話描述
+- 找不到想要的家具？拍照自己做一件：選類型、量尺寸，顏色自動從照片取出；支援 WebGPU 的電腦還能實驗性地從照片生成 3D 形狀
+- 輸出專業設計圖（PDF／DXF）
+- 自動存到瀏覽器，可匯出／匯入房間 JSON（含照片與自己做的家具）
+
+## 零成本架構
+| 需求 | 做法 | 費用 |
+|---|---|---|
+| 牆面辨識 | 使用者在照片上框選；OWLv2 在使用者瀏覽器執行，只做建議 | 0 |
+| 自動配置 | 前端規則引擎（`lib/layoutEngine.ts`） | 0 |
+| 照片生成 3D | TripoSR＋U²-Net，在使用者顯示卡上執行（WebGPU） | 0 |
+| 家具庫 | Supabase 免費方案；連不上時自動改用內建家具 | 0 |
+| 房間、照片、自製家具 | 只存在使用者自己的瀏覽器（localStorage、IndexedDB） | 0 |
+| 網站主機 | Vercel 免費方案（Hobby 限非商業用途） | 0 |
 
 ## 開始使用
 ```bash
@@ -52,11 +66,16 @@ npm run dev
 Kenney 網站不允許程式自動下載，請手動到 https://kenney.nl/assets/furniture-kit 下載，把 GLB 檔放進 `public/models/kenney/`，再執行 `npm run catalog`。
 
 ## 技術
-Next.js 16、TypeScript、three.js（React Three Fiber）、zustand、Tailwind CSS、Supabase（家具庫與管理員登入）
+Next.js 16、TypeScript、three.js（React Three Fiber）、zustand、Tailwind CSS、Supabase（家具庫與管理員登入）、Transformers.js 3.8、ONNX Runtime Web 1.30（WebGPU）、glTF-Transform＋meshoptimizer
 
 ## 素材授權
 - KayKit Furniture Bits（CC0）
 - Poly Haven（CC0）
 - Kenney Furniture Kit（CC0，需手動加入）
+
+瀏覽器端模型（只在使用者同意下載後執行）：
+- OWLv2（Google，Apache-2.0）：自動找找看
+- TripoSR（Stability AI／Tripo AI，MIT；內含 DINO ViT-B/16，Apache-2.0）：從照片生成 3D
+- U²-Net（Apache-2.0）：生成 3D 前的去背
 
 網站內「素材來源與授權」頁面：`/licenses`
