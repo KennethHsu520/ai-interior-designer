@@ -10,13 +10,13 @@ function HDim({ x1, x2, y, u, label }: { x1: number; x2: number; y: number; u: n
   const tk = u * 0.9
   return (
     <g>
-      <line x1={x1} y1={y - u * 1.5} x2={x1} y2={y + u * 1.5} stroke="#334155" strokeWidth={u * 0.13} />
-      <line x1={x2} y1={y - u * 1.5} x2={x2} y2={y + u * 1.5} stroke="#334155" strokeWidth={u * 0.13} />
-      <line x1={x1 - u} y1={y} x2={x2 + u} y2={y} stroke="#334155" strokeWidth={u * 0.18} />
-      <line x1={x1 - tk} y1={y + tk} x2={x1 + tk} y2={y - tk} stroke="#0f172a" strokeWidth={u * 0.35} />
-      <line x1={x2 - tk} y1={y + tk} x2={x2 + tk} y2={y - tk} stroke="#0f172a" strokeWidth={u * 0.35} />
+      <line x1={x1} y1={y - u * 1.5} x2={x1} y2={y + u * 1.5} stroke="#424245" strokeWidth={u * 0.13} />
+      <line x1={x2} y1={y - u * 1.5} x2={x2} y2={y + u * 1.5} stroke="#424245" strokeWidth={u * 0.13} />
+      <line x1={x1 - u} y1={y} x2={x2 + u} y2={y} stroke="#424245" strokeWidth={u * 0.18} />
+      <line x1={x1 - tk} y1={y + tk} x2={x1 + tk} y2={y - tk} stroke="#1d1d1f" strokeWidth={u * 0.35} />
+      <line x1={x2 - tk} y1={y + tk} x2={x2 + tk} y2={y - tk} stroke="#1d1d1f" strokeWidth={u * 0.35} />
       {x2 - x1 > u * 4 && (
-        <text x={(x1 + x2) / 2} y={y - u * 1.2} fontSize={u * 2.1} textAnchor="middle" fill="#0f172a">
+        <text x={(x1 + x2) / 2} y={y - u * 1.2} fontSize={u * 2.1} textAnchor="middle" fill="#1d1d1f">
           {label}
         </text>
       )}
@@ -28,13 +28,13 @@ function VDim({ x, y1, y2, u, label }: { x: number; y1: number; y2: number; u: n
   const tk = u * 0.9
   return (
     <g>
-      <line x1={x - u * 1.5} y1={y1} x2={x + u * 1.5} y2={y1} stroke="#334155" strokeWidth={u * 0.13} />
-      <line x1={x - u * 1.5} y1={y2} x2={x + u * 1.5} y2={y2} stroke="#334155" strokeWidth={u * 0.13} />
-      <line x1={x} y1={y1 + u} x2={x} y2={y2 - u} stroke="#334155" strokeWidth={u * 0.18} />
-      <line x1={x - tk} y1={y1 + tk} x2={x + tk} y2={y1 - tk} stroke="#0f172a" strokeWidth={u * 0.35} />
-      <line x1={x - tk} y1={y2 + tk} x2={x + tk} y2={y2 - tk} stroke="#0f172a" strokeWidth={u * 0.35} />
+      <line x1={x - u * 1.5} y1={y1} x2={x + u * 1.5} y2={y1} stroke="#424245" strokeWidth={u * 0.13} />
+      <line x1={x - u * 1.5} y1={y2} x2={x + u * 1.5} y2={y2} stroke="#424245" strokeWidth={u * 0.13} />
+      <line x1={x} y1={y1 + u} x2={x} y2={y2 - u} stroke="#424245" strokeWidth={u * 0.18} />
+      <line x1={x - tk} y1={y1 + tk} x2={x + tk} y2={y1 - tk} stroke="#1d1d1f" strokeWidth={u * 0.35} />
+      <line x1={x - tk} y1={y2 + tk} x2={x + tk} y2={y2 - tk} stroke="#1d1d1f" strokeWidth={u * 0.35} />
       {Math.abs(y2 - y1) > u * 4 && (
-        <text x={x - u * 1.2} y={(y1 + y2) / 2} fontSize={u * 2.1} textAnchor="middle" fill="#0f172a" transform={`rotate(-90 ${x - u * 1.2} ${(y1 + y2) / 2})`}>
+        <text x={x - u * 1.2} y={(y1 + y2) / 2} fontSize={u * 2.1} textAnchor="middle" fill="#1d1d1f" transform={`rotate(-90 ${x - u * 1.2} ${(y1 + y2) / 2})`}>
           {label}
         </text>
       )}
@@ -79,10 +79,10 @@ export default function ElevationDrawing({
       const ox = hingeLeft ? x + w : x
       nodes.push(
         <g key={it.id}>
-          <rect x={x} y={y} width={w} height={h} fill="#fff7ed" stroke="#0f172a" strokeWidth={u * 0.35} />
-          <polyline points={`${ox},${y} ${hx},${y + h / 2} ${ox},${y + h}`} fill="none" stroke="#b45309" strokeWidth={u * 0.18} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
-          <circle cx={ox + (hingeLeft ? -u * 2.5 : u * 2.5)} cy={Y(1.0)} r={u * 0.6} fill="#475569" />
-          <text x={x + w / 2} y={y + u * 3} fontSize={u * 2} textAnchor="middle" fill="#b45309" fontWeight={700}>
+          <rect x={x} y={y} width={w} height={h} fill="#fff7ed" stroke="#1d1d1f" strokeWidth={u * 0.35} />
+          <polyline points={`${ox},${y} ${hx},${y + h / 2} ${ox},${y + h}`} fill="none" stroke="#8e4c31" strokeWidth={u * 0.18} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
+          <circle cx={ox + (hingeLeft ? -u * 2.5 : u * 2.5)} cy={Y(1.0)} r={u * 0.6} fill="#424245" />
+          <text x={x + w / 2} y={y + u * 3} fontSize={u * 2} textAnchor="middle" fill="#8e4c31" fontWeight={700}>
             {it.tag}
           </text>
         </g>,
@@ -90,7 +90,7 @@ export default function ElevationDrawing({
     } else if (it.type === 'window') {
       nodes.push(
         <g key={it.id}>
-          <rect x={x} y={y} width={w} height={h} fill="#eff6ff" stroke="#0f172a" strokeWidth={u * 0.35} />
+          <rect x={x} y={y} width={w} height={h} fill="#eff6ff" stroke="#1d1d1f" strokeWidth={u * 0.35} />
           <rect x={x + u} y={y + u} width={w - u * 2} height={h - u * 2} fill="none" stroke="#0369a1" strokeWidth={u * 0.15} />
           <line x1={x + w / 2} y1={y + u} x2={x + w / 2} y2={y + h - u} stroke="#0369a1" strokeWidth={u * 0.15} />
           <text x={x + w / 2} y={y + h / 2} fontSize={u * 2} textAnchor="middle" dominantBaseline="middle" fill="#0369a1" fontWeight={700}>
@@ -99,7 +99,7 @@ export default function ElevationDrawing({
         </g>,
       )
     } else {
-      const color = it.type === 'air_conditioner' ? '#0e7490' : it.type === 'light' ? '#ca8a04' : it.type === 'furniture' ? '#64748b' : '#7c3aed'
+      const color = it.type === 'air_conditioner' ? '#0e7490' : it.type === 'light' ? '#ca8a04' : it.type === 'furniture' ? '#6e6e73' : '#7c3aed'
       nodes.push(
         <g key={it.id}>
           <rect x={x} y={y} width={Math.max(w, u)} height={Math.max(h, u)} fill="#fff" stroke={color} strokeWidth={u * 0.3} />
@@ -113,18 +113,18 @@ export default function ElevationDrawing({
 
   return (
     <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} style={{ width: `${(vb.w * 10) / scale}mm`, height: `${(vb.h * 10) / scale}mm` }} fontFamily="'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
-      <rect x={0} y={0} width={L} height={H} fill="#fafafa" stroke="#0f172a" strokeWidth={u * 0.5} />
-      <line x1={-u * 4} y1={H} x2={L + u * 4} y2={H} stroke="#0f172a" strokeWidth={u * 0.8} />
-      <text x={L + u * 1} y={H - u * 0.8} fontSize={u * 1.6} fill="#64748b">
+      <rect x={0} y={0} width={L} height={H} fill="#fafafa" stroke="#1d1d1f" strokeWidth={u * 0.5} />
+      <line x1={-u * 4} y1={H} x2={L + u * 4} y2={H} stroke="#1d1d1f" strokeWidth={u * 0.8} />
+      <text x={L + u * 1} y={H - u * 0.8} fontSize={u * 1.6} fill="#6e6e73">
         FL±0
       </text>
-      <text x={L + u * 1} y={-u * 0.8} fontSize={u * 1.6} fill="#64748b">
+      <text x={L + u * 1} y={-u * 0.8} fontSize={u * 1.6} fill="#6e6e73">
         CH {cm(height)}
       </text>
       {furniture.map((f) => (
         <g key={f.tag}>
-          <rect x={f.offset * 100} y={Y(f.height)} width={f.width * 100} height={f.height * 100} fill="none" stroke="#94a3b8" strokeWidth={u * 0.2} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
-          <text x={f.offset * 100 + (f.width * 100) / 2} y={Y(f.height) + u * 2.6} fontSize={u * 1.7} textAnchor="middle" fill="#64748b">
+          <rect x={f.offset * 100} y={Y(f.height)} width={f.width * 100} height={f.height * 100} fill="none" stroke="#a1a1a6" strokeWidth={u * 0.2} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
+          <text x={f.offset * 100 + (f.width * 100) / 2} y={Y(f.height) + u * 2.6} fontSize={u * 1.7} textAnchor="middle" fill="#6e6e73">
             {f.tag}
           </text>
         </g>
@@ -147,7 +147,7 @@ export default function ElevationDrawing({
       ))}
       {opens.map((it) =>
         it.type === 'door' ? (
-          <text key={`sw${it.id}`} x={it.offset * 100 + (it.width * 100) / 2} y={Y(it.elevation + it.height) + u * 5.5} fontSize={u * 1.6} textAnchor="middle" fill="#b45309">
+          <text key={`sw${it.id}`} x={it.offset * 100 + (it.width * 100) / 2} y={Y(it.elevation + it.height) + u * 5.5} fontSize={u * 1.6} textAnchor="middle" fill="#8e4c31">
             {swingText(it)}
           </text>
         ) : null,

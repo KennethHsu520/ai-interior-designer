@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Cpu, ExternalLink, Package } from 'lucide-react'
 import { useCatalog } from '@/lib/catalog'
 import { useCatalogLoader } from '@/lib/catalogLoader'
 import { SOURCE_INFO } from '@/lib/catalogDb'
@@ -19,6 +20,34 @@ const STATUS_TEXT: Record<string, string> = {
   offline: '家具資料庫暫時連不上，以下為內建家具',
   unconfigured: '尚未設定家具資料庫，以下為內建家具',
   builtin: '載入中…',
+}
+
+function SectionHead({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+  return (
+    <div className="max-w-2xl">
+      <span className="text-[13px] font-medium uppercase tracking-wider text-brand-600">{eyebrow}</span>
+      <h2 className="mt-2 text-h3 font-bold text-ink">{title}</h2>
+      <p className="mt-2 text-body-sm text-ink-2">{text}</p>
+    </div>
+  )
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <p className="flex gap-3 text-sm">
+      <span className="w-10 shrink-0 text-ink-4">{label}</span>
+      <span className="min-w-0 text-ink-2">{children}</span>
+    </p>
+  )
+}
+
+function ExtLink({ href }: { href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="mt-3 inline-flex max-w-full items-center gap-1 text-sm text-brand-600 transition-colors hover:text-brand-700">
+      <span className="truncate">{href.replace(/^https?:\/\//, '')}</span>
+      <ExternalLink size={13} strokeWidth={1.75} className="shrink-0" />
+    </a>
+  )
 }
 
 export default function LicensesContent() {
@@ -42,71 +71,90 @@ export default function LicensesContent() {
 
   return (
     <>
-      <p className="mt-2 text-sm leading-relaxed text-slate-600">
-        本網站只使用授權清楚、可商用的 3D 素材。目前收錄 {listed.length} 件家具，授權包含：{licenses.join('、')}。以下列出每個來源與作者以表感謝。
-      </p>
-      <p className="mt-1 text-xs text-slate-400">{STATUS_TEXT[status]}</p>
-      <ul className="mt-6 flex flex-col gap-4">
-        {sources.map((s) => (
-          <li key={s.name} className="rounded-xl border border-slate-200 bg-white p-4">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="font-bold">{s.name}</h2>
-              <span className="text-xs text-slate-500">{s.count} 件</span>
-            </div>
-            <p className="mt-1 text-sm text-slate-600">作者：{s.author}</p>
-            <p className="text-sm text-slate-600">授權：{Array.from(s.licenses).join('、')}</p>
-            {NOTES[s.name] && <p className="mt-1 text-xs text-slate-500">{NOTES[s.name]}</p>}
-            {s.url && (
-              <a href={s.url} target="_blank" rel="noreferrer" className="mt-2 inline-block break-all text-sm text-sky-600 hover:underline">
-                {s.url}
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="mt-8 text-lg font-bold">瀏覽器端 AI 模型與函式庫</h2>
-      <p className="mt-1 text-sm text-slate-600">以下模型只會在你同意下載後，於你的瀏覽器中執行，本站不呼叫任何付費 AI 服務。</p>
-      <ul className="mt-3 flex flex-col gap-3">
-        {MODEL_LICENSES.map((m) => (
-          <li key={m.name} className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="font-bold">{m.name}</h3>
-            <p className="mt-1 text-sm text-slate-600">用途：{m.use}</p>
-            <p className="text-sm text-slate-600">作者：{m.author}</p>
-            <p className="text-sm text-slate-600">授權：{m.license}</p>
-            <p className="mt-1 text-xs text-slate-500">{m.note}</p>
-            <a href={m.url} target="_blank" rel="noreferrer" className="mt-2 inline-block break-all text-sm text-sky-600 hover:underline">
-              {m.url}
-            </a>
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="mt-8 text-lg font-bold">完整清單</h2>
-      <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[480px] text-left text-xs">
-          <thead className="text-slate-500">
-            <tr>
-              <th className="py-1">名稱</th>
-              <th>分類</th>
-              <th>來源</th>
-              <th>作者</th>
-              <th>授權</th>
-            </tr>
-          </thead>
-          <tbody>
-            {listed.map((c) => (
-              <tr key={c.id} className="border-t border-slate-100">
-                <td className="py-1">{c.name}</td>
-                <td>{c.category}</td>
-                <td>{c.source}</td>
-                <td>{c.author ?? SOURCE_INFO[c.source]?.author ?? '—'}</td>
-                <td>{c.license}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-card border border-line bg-white px-5 py-4 shadow-hairline">
+        <span className="text-sm text-ink-2">
+          目前收錄 <b className="font-bold tabular-nums text-ink">{listed.length}</b> 件家具
+        </span>
+        <span className="text-sm text-ink-2">授權包含：{licenses.join('、')}</span>
+        <span className="ml-auto inline-flex items-center gap-2 text-xs text-ink-3">
+          <span className={`h-1.5 w-1.5 rounded-full ${status === 'online' ? 'bg-success' : status === 'offline' ? 'bg-danger' : 'bg-brand-400'}`} />
+          {STATUS_TEXT[status]}
+        </span>
       </div>
+
+      <section className="mt-20">
+        <SectionHead eyebrow="3D 家具素材" title="素材來源" text="以下列出每個來源與作者，以及該來源收錄的件數。" />
+        <ul className="mt-8 grid gap-4 md:grid-cols-2">
+          {sources.map((s) => (
+            <li key={s.name} className="flex flex-col rounded-card border border-line bg-white p-6 shadow-hairline transition-[box-shadow,transform] duration-300 ease-soft hover:-translate-y-0.5 hover:shadow-card-hover">
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-field bg-brand-100 text-brand-600">
+                  <Package size={20} strokeWidth={1.75} />
+                </span>
+                <span className="rounded-pill bg-surface px-2.5 py-0.5 text-xs tabular-nums text-ink-3">{s.count} 件</span>
+              </div>
+              <h3 className="mt-4 text-[17px] font-bold tracking-tight text-ink">{s.name}</h3>
+              {NOTES[s.name] && <p className="mt-1 text-sm text-ink-3">{NOTES[s.name]}</p>}
+              <div className="mt-4 flex flex-col gap-1.5">
+                <Row label="作者">{s.author}</Row>
+                <Row label="授權">{Array.from(s.licenses).join('、')}</Row>
+              </div>
+              {s.url && <ExtLink href={s.url} />}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-20">
+        <SectionHead eyebrow="瀏覽器端 AI" title="模型與函式庫" text="以下模型只會在你同意下載後，於你的瀏覽器中執行，本站不呼叫任何付費 AI 服務。" />
+        <ul className="mt-8 grid gap-4 md:grid-cols-2">
+          {MODEL_LICENSES.map((m) => (
+            <li key={m.name} className="flex flex-col rounded-card border border-line bg-white p-6 shadow-hairline transition-[box-shadow,transform] duration-300 ease-soft hover:-translate-y-0.5 hover:shadow-card-hover">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-field bg-sage-100 text-sage-700">
+                <Cpu size={20} strokeWidth={1.75} />
+              </span>
+              <h3 className="mt-4 text-[17px] font-bold tracking-tight text-ink">{m.name}</h3>
+              <p className="mt-1 text-sm text-ink-3">{m.note}</p>
+              <div className="mt-4 flex flex-col gap-1.5">
+                <Row label="用途">{m.use}</Row>
+                <Row label="作者">{m.author}</Row>
+                <Row label="授權">{m.license}</Row>
+              </div>
+              <ExtLink href={m.url} />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-20">
+        <SectionHead eyebrow="完整清單" title={`全部 ${listed.length} 件家具`} text="每一件家具的名稱、分類、來源、作者與授權。" />
+        <div className="mt-8 overflow-hidden rounded-card border border-line bg-white shadow-hairline">
+          <div className="max-h-[70vh] overflow-auto">
+            <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+              <thead className="sticky top-0 bg-surface text-xs font-medium text-ink-3">
+                <tr>
+                  <th className="px-5 py-3 font-medium">名稱</th>
+                  <th className="px-3 py-3 font-medium">分類</th>
+                  <th className="px-3 py-3 font-medium">來源</th>
+                  <th className="px-3 py-3 font-medium">作者</th>
+                  <th className="px-5 py-3 font-medium">授權</th>
+                </tr>
+              </thead>
+              <tbody>
+                {listed.map((c) => (
+                  <tr key={c.id} className="border-t border-line transition-colors hover:bg-surface/60">
+                    <td className="px-5 py-2.5 text-ink">{c.name}</td>
+                    <td className="px-3 py-2.5 text-ink-2">{c.category}</td>
+                    <td className="px-3 py-2.5 text-ink-2">{c.source}</td>
+                    <td className="px-3 py-2.5 text-ink-2">{c.author ?? SOURCE_INFO[c.source]?.author ?? '—'}</td>
+                    <td className="px-5 py-2.5 text-ink-2">{c.license}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
