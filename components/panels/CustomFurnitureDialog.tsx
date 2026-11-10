@@ -7,7 +7,8 @@ import * as THREE from 'three'
 import { compressImage, deletePhoto, loadPhoto, savePhoto } from '@/lib/image'
 import { extractColors } from '@/lib/colorExtract'
 import { KINDS, rolesOf, roleLabel, SWATCHES, type Role } from '@/lib/procedural'
-import { CATEGORY_ICON } from '@/lib/catalog'
+import { Camera, FlaskConical, Image as ImageIcon, Sparkles, X } from 'lucide-react'
+import CategoryIcon from '@/components/ui/CategoryIcon'
 import { CUSTOM_PREFIX, defaultColors, kindOf, saveCustomFurniture, type CustomFurniture } from '@/lib/customFurniture'
 import { PROCEDURAL_CATALOG } from '@/lib/procedural'
 import { getThumbnail } from '@/lib/thumbnails'
@@ -85,7 +86,7 @@ function KindThumb({ kind }: { kind: string }) {
       alive = false
     }
   }, [sample])
-  return <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-slate-50">{url ? <img src={url} alt="" className="h-full w-full object-contain" /> : <span className="text-lg opacity-40">…</span>}</div>
+  return <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-surface">{url ? <img src={url} alt="" className="h-full w-full object-contain" /> : <span className="text-lg opacity-40">…</span>}</div>
 }
 
 function assignColors(kind: string, palette: string[]) {
@@ -243,61 +244,63 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
   }
 
   const sizeField = (key: 'width' | 'depth' | 'height', label: string) => (
-    <label className="flex flex-col gap-1 text-[11px] font-semibold text-slate-500">
+    <label className="flex flex-col gap-1 text-xs font-medium text-ink-3">
       {label}
-      <span className="flex items-center rounded-lg border border-slate-200 bg-white px-2 focus-within:ring-2 focus-within:ring-sky-300">
+      <span className="flex h-10 items-center rounded-field border border-line bg-white px-3 transition-[border-color,box-shadow] duration-200 ease-soft focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200">
         <input
           type="number"
           step={0.01}
           min={0.02}
           value={size[key]}
           onChange={(e) => setSize({ ...size, [key]: Number(e.target.value) })}
-          className="w-full min-w-0 bg-transparent py-1.5 text-sm font-normal text-slate-800 outline-none"
+          className="w-full min-w-0 bg-transparent text-sm font-normal tabular-nums text-ink outline-none"
         />
-        <span className="text-xs font-normal text-slate-400">m</span>
+        <span className="text-xs font-normal text-ink-4">m</span>
       </span>
     </label>
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-slate-900/50 sm:items-center sm:p-4" onClick={() => onClose()}>
-      <div onClick={(e) => e.stopPropagation()} className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-3xl sm:rounded-2xl" role="dialog" aria-modal="true" aria-label="自己做一件家具">
-        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-ink/40 backdrop-blur-sm sm:items-center sm:p-4" onClick={() => onClose()}>
+      <div onClick={(e) => e.stopPropagation()} className="flex h-full w-full flex-col overflow-hidden bg-white shadow-float sm:h-auto sm:max-h-[92dvh] sm:max-w-3xl sm:rounded-hero" role="dialog" aria-modal="true" aria-label="自己做一件家具">
+        <header className="flex items-center justify-between border-b border-line px-4 py-3">
           <div>
             <h2 className="text-base font-bold">{editing ? `編輯「${editing.name}」` : '自己做一件家具'}</h2>
-            <p className="text-[11px] text-slate-500">拍照、選類型、量尺寸，顏色會自動從照片取出。資料只存在你的瀏覽器。</p>
+            <p className="text-[11px] text-ink-3">拍照、選類型、量尺寸，顏色會自動從照片取出。資料只存在你的瀏覽器。</p>
           </div>
-          <button onClick={() => onClose()} className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="關閉">
-            ✕
+          <button onClick={() => onClose()} className="rounded-field px-2 py-1 text-ink-4 hover:bg-surface-2 hover:text-ink" aria-label="關閉">
+            <X size={18} strokeWidth={1.75} />
           </button>
         </header>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 sm:grid-cols-[1fr_280px]">
           <div className="flex min-w-0 flex-col gap-4">
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-bold text-slate-800">① 家具照片</h3>
+              <h3 className="text-sm font-bold text-ink">① 家具照片</h3>
               <div className="flex items-center gap-3">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                  {photo ? <img src={photo} alt="家具照片" className="h-full w-full object-cover" /> : <span className="text-2xl opacity-40">📷</span>}
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface">
+                  {photo ? <img src={photo} alt="家具照片" className="h-full w-full object-cover" /> : <Camera size={28} strokeWidth={1.5} className="text-ink-4" />}
                 </div>
                 <div className="flex flex-1 flex-col gap-1.5">
                   <div className="flex gap-2">
-                    <button onClick={() => cameraRef.current?.click()} className="flex-1 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-500">
-                      📷 拍照
+                    <button onClick={() => cameraRef.current?.click()} className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill bg-brand-500 px-3 text-xs font-medium text-white shadow-hairline transition-colors duration-200 ease-soft hover:bg-brand-600">
+                      <Camera size={14} strokeWidth={1.75} />
+                      拍照
                     </button>
-                    <button onClick={() => galleryRef.current?.click()} className="flex-1 rounded-lg border border-sky-300 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-50">
-                      🖼️ {photo ? '換一張' : '上傳照片'}
+                    <button onClick={() => galleryRef.current?.click()} className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-pill border border-line bg-white px-3 text-xs font-medium text-ink transition-colors duration-200 ease-soft hover:bg-surface">
+                      <ImageIcon size={14} strokeWidth={1.75} />
+                      {photo ? '換一張' : '上傳照片'}
                     </button>
                   </div>
                   {palette.length > 0 && (
-                    <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                    <div className="flex items-center gap-1 text-[11px] text-ink-3">
                       照片主色
                       {palette.map((c) => (
                         <span key={c} className="h-4 w-4 rounded border border-black/10" style={{ background: c }} title={c} />
                       ))}
                     </div>
                   )}
-                  {!photo && <span className="text-[11px] text-slate-400">照片可以略過，之後也能手動選顏色</span>}
+                  {!photo && <span className="text-[11px] text-ink-4">照片可以略過，之後也能手動選顏色</span>}
                 </div>
               </div>
               <input ref={cameraRef} type="file" accept="image/*,.heic,.heif" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
@@ -305,17 +308,20 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
             </section>
 
             {recon.status !== 'unsupported' && recon.status !== 'checking' && (
-              <section className="flex flex-col gap-2 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
+              <section className="flex flex-col gap-2 rounded-card border border-brand-200 bg-brand-50 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-violet-900">🧪 實驗：從照片生成 3D 形狀</h3>
-                  <span className="rounded-full bg-violet-200 px-2 py-0.5 text-[10px] font-semibold text-violet-800">實驗功能</span>
+                  <h3 className="flex items-center gap-1.5 text-sm font-bold text-brand-800">
+                    <FlaskConical size={15} strokeWidth={1.75} />
+                    實驗：從照片生成 3D 形狀
+                  </h3>
+                  <span className="rounded-full bg-brand-200 px-2 py-0.5 text-[10px] font-medium text-brand-700">實驗功能</span>
                 </div>
-                <p className="text-[11px] leading-relaxed text-violet-900/80">形狀僅供參考，尺寸以你在 ③ 輸入的為準。全部在你的電腦上用顯示卡運算，照片不會上傳。背景越單純、家具越完整入鏡，效果越好。</p>
+                <p className="text-[11px] leading-relaxed text-brand-800/80">形狀僅供參考，尺寸以你在 ③ 輸入的為準。全部在你的電腦上用顯示卡運算，照片不會上傳。背景越單純、家具越完整入鏡，效果越好。</p>
                 {recon.status === 'consent' && (
-                  <div className="flex flex-col gap-2 rounded-lg bg-white p-2 text-[11px] text-slate-700">
+                  <div className="flex flex-col gap-2 rounded-field bg-white p-2 text-[11px] text-ink-2">
                     <p>第一次使用需要下載 3D 生成模型（{RECON_DOWNLOAD}），下載後會存在瀏覽器，下次不用再下載。建議使用 Wi-Fi。</p>
                     <div className="flex gap-2">
-                      <button onClick={() => setRecon({ status: 'idle' })} className="rounded-md border border-slate-200 px-3 py-1 font-semibold text-slate-600">
+                      <button onClick={() => setRecon({ status: 'idle' })} className="rounded-pill border border-line bg-white px-3 py-1 font-medium text-ink-2 hover:bg-surface">
                         先不要
                       </button>
                       <button
@@ -326,7 +332,7 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                           setRecon({ status: 'idle' })
                           setTimeout(startRecon, 0)
                         }}
-                        className="flex-1 rounded-md bg-violet-600 px-3 py-1 font-bold text-white hover:bg-violet-500"
+                        className="flex-1 rounded-pill bg-brand-500 px-3 py-1 font-medium text-white hover:bg-brand-600"
                       >
                         下載並開始生成
                       </button>
@@ -334,34 +340,35 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                   </div>
                 )}
                 {recon.status === 'working' && (
-                  <div className="flex flex-col gap-1.5 text-[11px] text-violet-900">
+                  <div className="flex flex-col gap-1.5 text-[11px] text-brand-800">
                     <div className="flex items-center justify-between">
                       <span>
                         {STAGE_LABEL[recon.progress.stage]}… {Math.round(recon.progress.percent)}%
                       </span>
-                      <button onClick={() => abortRef.current?.abort()} className="rounded-md border border-violet-300 bg-white px-2 py-0.5 font-semibold text-violet-700 hover:bg-violet-100">
+                      <button onClick={() => abortRef.current?.abort()} className="rounded-pill border border-brand-300 bg-white px-2.5 py-0.5 font-medium text-brand-700 hover:bg-brand-100">
                         取消
                       </button>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-violet-100">
-                      <div className="h-full rounded-full bg-violet-500 transition-all" style={{ width: `${recon.progress.percent}%` }} />
+                    <div className="h-1.5 overflow-hidden rounded-full bg-brand-100">
+                      <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${recon.progress.percent}%` }} />
                     </div>
                   </div>
                 )}
-                {recon.status === 'failed' && <p className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">沒有成功：{recon.message}。已改用下面的參數化家具，你可以換一張照片再試。</p>}
+                {recon.status === 'failed' && <p className="rounded-field bg-brand-50 px-2 py-1.5 text-[11px] text-brand-700">沒有成功：{recon.message}。已改用下面的參數化家具，你可以換一張照片再試。</p>}
                 {(recon.status === 'idle' || recon.status === 'failed') && (
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       disabled={!photo || !!busy}
                       onClick={startRecon}
-                      className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-500 disabled:bg-slate-300"
+                      className="inline-flex h-8 items-center gap-1 rounded-pill bg-brand-500 px-3.5 text-xs font-medium text-white transition-colors duration-200 ease-soft hover:bg-brand-600 disabled:bg-line-2"
                     >
-                      {reconMesh ? '重新生成' : '✨ 從照片生成形狀'}
+                      <Sparkles size={13} strokeWidth={1.75} />
+                      {reconMesh ? '重新生成' : '從照片生成形狀'}
                     </button>
-                    {!photo && <span className="text-[11px] text-slate-500">請先在 ① 拍照或上傳照片</span>}
+                    {!photo && <span className="text-[11px] text-ink-3">請先在 ① 拍照或上傳照片</span>}
                     {generatedAvailable && (
-                      <label className="ml-auto flex items-center gap-1.5 text-[11px] text-violet-900">
-                        <input type="checkbox" checked={useGenerated} onChange={(e) => setUseGenerated(e.target.checked)} className="accent-violet-600" />
+                      <label className="ml-auto flex items-center gap-1.5 text-[11px] text-brand-800">
+                        <input type="checkbox" checked={useGenerated} onChange={(e) => setUseGenerated(e.target.checked)} className="accent-brand-500" />
                         使用生成的形狀
                       </label>
                     )}
@@ -371,11 +378,12 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
             )}
 
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-bold text-slate-800">② 家具類型</h3>
+              <h3 className="text-sm font-bold text-ink">② 家具類型</h3>
               <div className="flex flex-wrap gap-1">
                 {KIND_CATEGORIES.map((c) => (
-                  <button key={c} onClick={() => setCategory(c)} className={`rounded-full px-2.5 py-1 text-xs font-medium ${category === c ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {CATEGORY_ICON[c] ?? ''} {c}
+                  <button key={c} onClick={() => setCategory(c)} className={`inline-flex items-center gap-1.5 rounded-pill border px-3 py-1 text-xs font-medium transition-colors duration-200 ease-soft ${category === c ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink-2 hover:border-line-2 hover:bg-surface'}`}>
+                    <CategoryIcon category={c} size={13} />
+                    {c}
                   </button>
                 ))}
               </div>
@@ -384,37 +392,37 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                   <button
                     key={k.kind}
                     onClick={() => chooseKind(k.kind)}
-                    className={`flex flex-col gap-1 rounded-xl border p-1.5 text-left ${kind === k.kind ? 'border-violet-500 bg-violet-50 ring-2 ring-violet-200' : 'border-slate-200 hover:border-sky-300'}`}
+                    className={`flex flex-col gap-1 rounded-card border p-1.5 text-left transition-[border-color,box-shadow] duration-200 ease-soft ${kind === k.kind ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-200' : 'border-line hover:border-brand-300 hover:shadow-card'}`}
                   >
                     <KindThumb kind={k.kind} />
-                    <span className="line-clamp-2 text-[11px] font-medium leading-tight text-slate-700">{k.name}</span>
+                    <span className="line-clamp-2 text-[11px] font-medium leading-tight text-ink-2">{k.name}</span>
                   </button>
                 ))}
               </div>
             </section>
 
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-bold text-slate-800">③ 實際尺寸（請用捲尺量）</h3>
+              <h3 className="text-sm font-bold text-ink">③ 實際尺寸（請用捲尺量）</h3>
               <div className="grid grid-cols-3 gap-2">
                 {sizeField('width', '寬')}
                 {sizeField('depth', '深')}
                 {sizeField('height', '高')}
               </div>
-              {!sizeOk && <p className="text-[11px] text-red-600">寬、深需介於 0.05～6 公尺，高需介於 0.02～3 公尺</p>}
+              {!sizeOk && <p className="text-[11px] text-danger">寬、深需介於 0.05～6 公尺，高需介於 0.02～3 公尺</p>}
               {info && (
-                <button onClick={() => setSize({ width: info.size[0], depth: info.size[1], height: info.size[2] })} className="self-start text-[11px] text-sky-600 hover:underline">
+                <button onClick={() => setSize({ width: info.size[0], depth: info.size[1], height: info.size[2] })} className="self-start text-[11px] text-brand-500 hover:underline">
                   改回常見尺寸（{info.size.join(' × ')} m）
                 </button>
               )}
             </section>
 
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-bold text-slate-800">④ 顏色</h3>
-              {useGenerated && generatedAvailable && <p className="text-[11px] text-slate-500">目前使用生成的 3D 形狀，顏色直接來自照片；改用參數化家具時才會套用下面的顏色。</p>}
+              <h3 className="text-sm font-bold text-ink">④ 顏色</h3>
+              {useGenerated && generatedAvailable && <p className="text-[11px] text-ink-3">目前使用生成的 3D 形狀，顏色直接來自照片；改用參數化家具時才會套用下面的顏色。</p>}
               {roles.length > 1 && (
                 <div className="flex flex-wrap gap-1">
                   {roles.map((r) => (
-                    <button key={r} onClick={() => setRole(r)} className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${activeRole === r ? 'border-sky-400 bg-sky-50 text-sky-700' : 'border-slate-200 text-slate-600'}`}>
+                    <button key={r} onClick={() => setRole(r)} className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${activeRole === r ? 'border-brand-400 bg-brand-50 text-brand-700' : 'border-line text-ink-2'}`}>
                       <span className="h-2.5 w-2.5 rounded-full border border-black/10" style={{ background: colors[r] }} />
                       {roleLabel(kind, r)}
                     </button>
@@ -426,22 +434,22 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                   <button
                     key={c}
                     onClick={() => setColors({ ...colors, [activeRole]: c })}
-                    className={`aspect-square rounded-md border ${colors[activeRole]?.toLowerCase() === c.toLowerCase() ? 'border-sky-500 ring-2 ring-sky-300' : 'border-black/10'}`}
+                    className={`aspect-square rounded-md border ${colors[activeRole]?.toLowerCase() === c.toLowerCase() ? 'border-brand-500 ring-2 ring-brand-200' : 'border-black/10'}`}
                     style={{ background: c }}
                     aria-label={`顏色 ${c}`}
                     title={palette.includes(c) ? `照片取色 ${c}` : c}
                   />
                 ))}
               </div>
-              <label className="flex items-center gap-2 text-[11px] text-slate-500">
+              <label className="flex items-center gap-2 text-[11px] text-ink-3">
                 自訂{roleLabel(kind, activeRole)}顏色
-                <input type="color" value={/^#[0-9a-f]{6}$/i.test(colors[activeRole] ?? '') ? colors[activeRole] : '#cccccc'} onChange={(e) => setColors({ ...colors, [activeRole]: e.target.value })} className="h-6 w-10 cursor-pointer rounded border border-slate-200" />
+                <input type="color" value={/^#[0-9a-f]{6}$/i.test(colors[activeRole] ?? '') ? colors[activeRole] : '#cccccc'} onChange={(e) => setColors({ ...colors, [activeRole]: e.target.value })} className="h-6 w-10 cursor-pointer rounded border border-line" />
               </label>
             </section>
           </div>
 
           <aside className="flex flex-col gap-3 sm:sticky sm:top-0 sm:self-start">
-            <div className="aspect-square w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-50 to-slate-200">
+            <div className="aspect-square w-full overflow-hidden rounded-card bg-gradient-to-b from-canvas to-surface-2">
               <Canvas camera={{ position: [2.2, 1.6, 2.6], fov: 35 }} dpr={[1, 2]}>
                 <hemisphereLight args={['#ffffff', '#8a8070', 2.2]} />
                 <directionalLight position={[3, 5, 4]} intensity={2} />
@@ -457,13 +465,13 @@ export default function CustomFurnitureDialog({ editing, onClose }: { editing?: 
                 <OrbitControls enablePan={false} minDistance={1} maxDistance={8} autoRotate autoRotateSpeed={1.2} />
               </Canvas>
             </div>
-            <p className="text-center text-[11px] text-slate-400">拖曳可以旋轉預覽</p>
-            <label className="flex flex-col gap-1 text-xs font-semibold text-slate-600">
+            <p className="text-center text-[11px] text-ink-4">拖曳可以旋轉預覽</p>
+            <label className="flex flex-col gap-1 text-xs font-medium text-ink-3">
               ⑤ 名稱
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：客廳的灰色沙發" className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:ring-2 focus:ring-sky-300" />
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：客廳的灰色沙發" className="h-10 rounded-field border border-line bg-white px-3 text-sm font-normal text-ink outline-none transition-[border-color,box-shadow] duration-200 ease-soft placeholder:text-ink-4 focus:border-brand-400 focus:ring-2 focus:ring-brand-200" />
             </label>
-            {error && <p className="rounded-lg bg-red-50 px-2 py-1.5 text-xs text-red-700">{error}</p>}
-            <button disabled={!canSave} onClick={save} className="rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300">
+            {error && <p className="rounded-field bg-danger/10 px-2 py-1.5 text-xs text-danger">{error}</p>}
+            <button disabled={!canSave} onClick={save} className="inline-flex h-11 items-center justify-center rounded-pill bg-brand-500 px-5 text-[15px] font-medium text-white shadow-hairline transition-colors duration-200 ease-soft hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-40">
               {busy ?? (editing ? '儲存變更' : '儲存到「我的家具」')}
             </button>
           </aside>

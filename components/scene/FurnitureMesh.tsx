@@ -84,7 +84,7 @@ function Placeholder({ item }: { item: CatalogItem }) {
   return (
     <mesh position={[0, item.size.height / 2, 0]}>
       <boxGeometry args={[item.size.width, item.size.height, item.size.depth]} />
-      <meshStandardMaterial color="#cbd5e1" transparent opacity={0.6} />
+      <meshStandardMaterial color="#d6d3cd" transparent opacity={0.6} />
     </mesh>
   )
 }
@@ -146,14 +146,14 @@ export default function FurnitureMesh({ f, item, invalid }: { f: PlacedFurniture
       {(invalid || selected) && (
         <mesh position={[0, h / 2 + 0.005, 0]} raycast={() => null}>
           <boxGeometry args={[w + 0.02, h + 0.01, d + 0.02]} />
-          <meshBasicMaterial color={invalid ? '#ef4444' : '#3b82f6'} transparent opacity={invalid ? 0.28 : 0.08} depthWrite={false} />
-          <Edges color={invalid ? '#dc2626' : '#2563eb'} lineWidth={2} />
+          <meshBasicMaterial color={invalid ? '#c2410c' : '#a65a3a'} transparent opacity={invalid ? 0.28 : 0.08} depthWrite={false} />
+          <Edges color={invalid ? '#c2410c' : '#8e4c31'} lineWidth={2} />
         </mesh>
       )}
       {selected && (
         <mesh position={[0, 0.01, d / 2 + 0.12]} rotation={[Math.PI / 2, 0, 0]} raycast={() => null}>
           <coneGeometry args={[0.08, 0.16, 3]} />
-          <meshBasicMaterial color="#2563eb" />
+          <meshBasicMaterial color="#8e4c31" />
         </mesh>
       )}
     </group>

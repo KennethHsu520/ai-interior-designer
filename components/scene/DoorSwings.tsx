@@ -21,7 +21,7 @@ function DoorSwing({ wallIndex, item, highlight }: { wallIndex: number; item: Wa
   const dz = g.leafEnd.z - g.hinge.z
   const leafAngle = Math.atan2(-dz, dx)
   const out = g.swing.side === 'out'
-  const color = highlight ? '#f59e0b' : out ? '#64748b' : '#b45309'
+  const color = highlight ? '#c4815f' : out ? '#6e6e73' : '#8e4c31'
   return (
     <group>
       <mesh geometry={fan} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.008, 0]} raycast={() => null}>

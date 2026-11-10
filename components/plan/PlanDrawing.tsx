@@ -22,7 +22,7 @@ function textAngle(dx: number, dy: number) {
   return a
 }
 
-export function Dim({ a, b, n, off, start, label, u, color = '#0f172a' }: { a: Vec2; b: Vec2; n: Vec2; off: number; start: number; label: string; u: number; color?: string }) {
+export function Dim({ a, b, n, off, start, label, u, color = '#1d1d1f' }: { a: Vec2; b: Vec2; n: Vec2; off: number; start: number; label: string; u: number; color?: string }) {
   const A = P(a)
   const B = P(b)
   const o = off
@@ -124,7 +124,7 @@ export default function PlanDrawing({
             off={T + u * 7}
             label={`${cm(marks[k + 1] - marks[k])}`}
             u={u}
-            color="#334155"
+            color="#424245"
           />,
         )
       }
@@ -134,8 +134,8 @@ export default function PlanDrawing({
     const inP = { x: mid.x * 100 + s.normal.x * sign * u * 5, y: mid.z * 100 + s.normal.z * sign * u * 5 }
     nodes.push(
       <g key={`wn${i}`}>
-        <circle cx={inP.x} cy={inP.y} r={u * 2.4} fill="#fff" stroke="#0f172a" strokeWidth={u * 0.2} />
-        <text x={inP.x} y={inP.y} fontSize={u * 2} textAnchor="middle" dominantBaseline="central" fill="#0f172a" fontWeight={700}>
+        <circle cx={inP.x} cy={inP.y} r={u * 2.4} fill="#fff" stroke="#1d1d1f" strokeWidth={u * 0.2} />
+        <text x={inP.x} y={inP.y} fontSize={u * 2} textAnchor="middle" dominantBaseline="central" fill="#1d1d1f" fontWeight={700}>
           {i + 1}
         </text>
       </g>,
@@ -154,7 +154,7 @@ export default function PlanDrawing({
 
   return (
     <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} style={{ width: `${(vb.w * 10) / scale}mm`, height: `${(vb.h * 10) / scale}mm` }} fontFamily="'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
-      <path d={`M ${pts(outer).replace(/ /g, ' L ')} Z M ${pts(floor).replace(/ /g, ' L ')} Z`} fill="#374151" fillRule="evenodd" stroke="#0f172a" strokeWidth={u * 0.35} />
+      <path d={`M ${pts(outer).replace(/ /g, ' L ')} Z M ${pts(floor).replace(/ /g, ' L ')} Z`} fill="#424245" fillRule="evenodd" stroke="#1d1d1f" strokeWidth={u * 0.35} />
       {[...windows, ...doors].map((it) => {
         const c = openingCut(it)
         return <polygon key={`cut${it.id}`} points={pts([c.a, c.b, c.b2, c.a2])} fill="#ffffff" />
@@ -168,9 +168,9 @@ export default function PlanDrawing({
         const m = { x: (c.a2.x + c.b2.x) / 2, z: (c.a2.z + c.b2.z) / 2 }
         return (
           <g key={`w${it.id}`}>
-            <polygon points={pts([c.a, c.b, c.b2, c.a2])} fill="none" stroke="#0f172a" strokeWidth={u * 0.25} />
+            <polygon points={pts([c.a, c.b, c.b2, c.a2])} fill="none" stroke="#1d1d1f" strokeWidth={u * 0.25} />
             {lines.map(([p, q], k) => (
-              <line key={k} x1={p.x * 100} y1={p.z * 100} x2={q.x * 100} y2={q.z * 100} stroke="#0f172a" strokeWidth={u * (k === 1 || k === 2 ? 0.25 : 0.18)} />
+              <line key={k} x1={p.x * 100} y1={p.z * 100} x2={q.x * 100} y2={q.z * 100} stroke="#1d1d1f" strokeWidth={u * (k === 1 || k === 2 ? 0.25 : 0.18)} />
             ))}
             <text x={m.x * 100 + c.out.x * 100 * 0.6} y={m.z * 100 + c.out.z * 100 * 0.6} fontSize={u * 2} textAnchor="middle" dominantBaseline="middle" fill="#0369a1" fontWeight={700}>
               {it.tag}
@@ -189,11 +189,11 @@ export default function PlanDrawing({
         const lp = P(mv({ x: (g.hinge.x + g.leafEnd.x + g.arc[Math.floor(g.arc.length / 2)].x) / 3, z: (g.hinge.z + g.leafEnd.z + g.arc[Math.floor(g.arc.length / 2)].z) / 3 }))
         return (
           <g key={`d${it.id}`}>
-            <line x1={c.a.x * 100} y1={c.a.z * 100} x2={c.a2.x * 100} y2={c.a2.z * 100} stroke="#0f172a" strokeWidth={u * 0.3} />
-            <line x1={c.b.x * 100} y1={c.b.z * 100} x2={c.b2.x * 100} y2={c.b2.z * 100} stroke="#0f172a" strokeWidth={u * 0.3} />
-            <polyline points={pts(arc)} fill="none" stroke="#0f172a" strokeWidth={u * 0.15} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
-            <line x1={hinge.x * 100} y1={hinge.z * 100} x2={end.x * 100} y2={end.z * 100} stroke="#0f172a" strokeWidth={u * 0.5} />
-            <text x={lp.x} y={lp.y} fontSize={u * 2} textAnchor="middle" dominantBaseline="middle" fill="#b45309" fontWeight={700}>
+            <line x1={c.a.x * 100} y1={c.a.z * 100} x2={c.a2.x * 100} y2={c.a2.z * 100} stroke="#1d1d1f" strokeWidth={u * 0.3} />
+            <line x1={c.b.x * 100} y1={c.b.z * 100} x2={c.b2.x * 100} y2={c.b2.z * 100} stroke="#1d1d1f" strokeWidth={u * 0.3} />
+            <polyline points={pts(arc)} fill="none" stroke="#1d1d1f" strokeWidth={u * 0.15} strokeDasharray={`${u * 1.2} ${u * 0.6}`} />
+            <line x1={hinge.x * 100} y1={hinge.z * 100} x2={end.x * 100} y2={end.z * 100} stroke="#1d1d1f" strokeWidth={u * 0.5} />
+            <text x={lp.x} y={lp.y} fontSize={u * 2} textAnchor="middle" dominantBaseline="middle" fill="#8e4c31" fontWeight={700}>
               {it.tag}
             </text>
           </g>
@@ -205,10 +205,10 @@ export default function PlanDrawing({
           const c = f.corners.reduce((acc, p) => ({ x: acc.x + p.x / 4, z: acc.z + p.z / 4 }), { x: 0, z: 0 })
           return (
             <g key={f.tag}>
-              <polygon points={pts(f.corners)} fill={f.rug ? 'none' : '#f8fafc'} stroke="#475569" strokeWidth={u * (f.rug ? 0.15 : 0.3)} strokeDasharray={f.rug ? `${u * 1} ${u * 0.6}` : undefined} />
-              {!f.rug && <line x1={f.front[0].x * 100} y1={f.front[0].z * 100} x2={f.front[1].x * 100} y2={f.front[1].z * 100} stroke="#475569" strokeWidth={u * 0.6} />}
-              <circle cx={c.x * 100} cy={c.z * 100} r={u * 2.6} fill="#fff" stroke="#0f172a" strokeWidth={u * 0.18} />
-              <text x={c.x * 100} y={c.z * 100} fontSize={u * 1.9} textAnchor="middle" dominantBaseline="central" fill="#0f172a" fontWeight={700}>
+              <polygon points={pts(f.corners)} fill={f.rug ? 'none' : '#fbfaf8'} stroke="#424245" strokeWidth={u * (f.rug ? 0.15 : 0.3)} strokeDasharray={f.rug ? `${u * 1} ${u * 0.6}` : undefined} />
+              {!f.rug && <line x1={f.front[0].x * 100} y1={f.front[0].z * 100} x2={f.front[1].x * 100} y2={f.front[1].z * 100} stroke="#424245" strokeWidth={u * 0.6} />}
+              <circle cx={c.x * 100} cy={c.z * 100} r={u * 2.6} fill="#fff" stroke="#1d1d1f" strokeWidth={u * 0.18} />
+              <text x={c.x * 100} y={c.z * 100} fontSize={u * 1.9} textAnchor="middle" dominantBaseline="central" fill="#1d1d1f" fontWeight={700}>
                 {f.tag}
               </text>
             </g>
@@ -295,10 +295,10 @@ export default function PlanDrawing({
         const area = Math.abs(signedArea(floor))
         return (
           <g>
-            <text x={c.x * 100} y={c.z * 100 - u * 2} fontSize={u * 3} textAnchor="middle" fill="#0f172a" fontWeight={700} paintOrder="stroke" stroke="#fff" strokeWidth={u * 0.8}>
+            <text x={c.x * 100} y={c.z * 100 - u * 2} fontSize={u * 3} textAnchor="middle" fill="#1d1d1f" fontWeight={700} paintOrder="stroke" stroke="#fff" strokeWidth={u * 0.8}>
               {title}
             </text>
-            <text x={c.x * 100} y={c.z * 100 + u * 1.8} fontSize={u * 2.1} textAnchor="middle" fill="#334155" paintOrder="stroke" stroke="#fff" strokeWidth={u * 0.8}>
+            <text x={c.x * 100} y={c.z * 100 + u * 1.8} fontSize={u * 2.1} textAnchor="middle" fill="#424245" paintOrder="stroke" stroke="#fff" strokeWidth={u * 0.8}>
               {area.toFixed(2)} m²（{(area / 3.3058).toFixed(2)} 坪）・淨高 {cm(room.height)}
             </text>
           </g>
@@ -306,14 +306,14 @@ export default function PlanDrawing({
       })()}
       <g transform={`translate(${vb.x + u * 6} ${vb.y + vb.h - u * 6})`}>
         {[0, 1, 2, 3, 4].map((k) => (
-          <rect key={k} x={k * 50} y={-u * 1.2} width={50} height={u * 1.2} fill={k % 2 ? '#fff' : '#0f172a'} stroke="#0f172a" strokeWidth={u * 0.12} />
+          <rect key={k} x={k * 50} y={-u * 1.2} width={50} height={u * 1.2} fill={k % 2 ? '#fff' : '#1d1d1f'} stroke="#1d1d1f" strokeWidth={u * 0.12} />
         ))}
         {[0, 100, 200].map((v) => (
-          <text key={v} x={v * 1} y={-u * 2.2} fontSize={u * 1.8} textAnchor="middle" fill="#0f172a">
+          <text key={v} x={v * 1} y={-u * 2.2} fontSize={u * 1.8} textAnchor="middle" fill="#1d1d1f">
             {v}
           </text>
         ))}
-        <text x={250 + u * 2} y={-u * 0.3} fontSize={u * 1.8} fill="#0f172a">
+        <text x={250 + u * 2} y={-u * 0.3} fontSize={u * 1.8} fill="#1d1d1f">
           cm
         </text>
       </g>

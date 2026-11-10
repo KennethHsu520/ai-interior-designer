@@ -90,7 +90,7 @@ export default function Wall({ index }: { index: number }) {
   const interactive = stage === 'room'
   const isSelected = selectedWall === index
   const isHovered = hoveredWall === index && interactive
-  const color = isSelected ? '#bcd4ff' : isHovered ? '#dde9ff' : wall?.confirmed && interactive ? '#e3f3e6' : '#f4f1ec'
+  const color = isSelected ? '#ebd3c6' : isHovered ? '#f6ece6' : wall?.confirmed && interactive ? '#e8ece6' : '#f4f1ec'
 
   const onOver = (e: ThreeEvent<PointerEvent>) => {
     if (!interactive) return
@@ -119,11 +119,11 @@ export default function Wall({ index }: { index: number }) {
       ))}
       <Label text={`${seg.length.toFixed(2)} m`} position={[seg.length / 2, 0.08, 0.3]} size={0.18} visible={!hidden} />
       <Label
-        text={`牆 ${index + 1}${wall?.photoUrl ? ' 📷' : ''}${wall?.confirmed ? ' ✓ 已確認' : ''}`}
+        text={`牆 ${index + 1}${wall?.confirmed ? '・已確認' : wall?.photoUrl ? '・已拍照' : ''}`}
         position={[seg.length / 2, height + 0.22, 0]}
         size={0.22}
-        background={wall?.confirmed ? '#10b981' : wall?.photoUrl ? '#0ea5e9' : 'rgba(255,255,255,0.92)'}
-        color={wall?.confirmed || wall?.photoUrl ? '#ffffff' : '#475569'}
+        background={wall?.confirmed ? '#3a7d5c' : wall?.photoUrl ? '#a65a3a' : 'rgba(255,255,255,0.92)'}
+        color={wall?.confirmed || wall?.photoUrl ? '#ffffff' : '#424245'}
         visible={!hidden && interactive}
       />
     </group>

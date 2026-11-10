@@ -31,7 +31,7 @@ function Floor() {
         <shapeGeometry args={[shape]} />
         <meshStandardMaterial color="#d9c7a7" roughness={0.85} />
       </mesh>
-      <Line points={outline} color="#64748b" lineWidth={2} />
+      <Line points={outline} color="#6e6e73" lineWidth={2} />
     </group>
   )
 }
@@ -261,7 +261,7 @@ export default function RoomScene() {
         else st.selectFurniture(null)
       }}
     >
-      <color attach="background" args={['#eef1f5']} />
+      <color attach="background" args={['#f5f3ef']} />
       <hemisphereLight args={['#ffffff', '#b9a98f', 0.7]} />
       <directionalLight
         position={[b.cx + 4, height + 6, b.cz + 3]}
@@ -280,8 +280,8 @@ export default function RoomScene() {
         infiniteGrid
         cellSize={0.5}
         sectionSize={1}
-        cellColor="#cbd5e1"
-        sectionColor="#94a3b8"
+        cellColor="#d6d3cd"
+        sectionColor="#a1a1a6"
         fadeDistance={40}
       />
       <Floor />

@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Check, Send, Sparkles } from 'lucide-react'
 import { useRoomStore } from '@/store/useRoomStore'
 import { requestLayout } from '@/lib/requestLayout'
 import { parseRequest, PREF_OPTIONS, prefActive, togglePref } from '@/lib/layoutEngine'
 import { UndoLayoutButton } from '@/components/scene/HistoryControls'
+import Button from '@/components/ui/Button'
+import { brandChipClass, helpTextClass, inputClass, noteClass, sectionTitleClass, subTitleClass } from '@/components/ui/fields'
 
 const SUPPORTED = PREF_OPTIONS.map((o) => `「${o.label}」`).join('、')
 
@@ -56,75 +59,58 @@ export default function ChatPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-bold text-slate-800">配置需求</h2>
-          <span className="text-[11px] text-slate-400">{activeCount ? `已開啟 ${activeCount} 項，會記住` : '點選想要的需求'}</span>
+    <div className="flex h-full flex-col gap-5">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className={sectionTitleClass}>配置需求</h2>
+          <span className="text-[11px] text-ink-4">{activeCount ? `已開啟 ${activeCount} 項，會記住` : '點選想要的需求'}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {PREF_OPTIONS.map((o) => {
             const on = prefActive(prefs, o)
             return (
-              <button
-                key={o.label}
-                title={o.hint}
-                aria-pressed={on}
-                onClick={() => setPrefs(togglePref(prefs, o))}
-                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  on ? 'border-violet-500 bg-violet-600 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:bg-violet-50'
-                }`}
-              >
-                {on ? '✓ ' : ''}
+              <button key={o.label} title={o.hint} aria-pressed={on} onClick={() => setPrefs(togglePref(prefs, o))} className={brandChipClass(on)}>
+                {on && <Check size={12} strokeWidth={2.5} />}
                 {o.label}
               </button>
             )
           })}
         </div>
-        <p className="text-[11px] leading-relaxed text-slate-500">
-          內建規則一定會做到：家具不穿牆、不重疊、不擋門；床、沙發、櫃子靠牆；保留 90 公分主要走道；床頭避開窗戶下方；不擋開關插座。
-        </p>
-        <button
-          disabled={busy || count === 0}
-          onClick={() => arrange()}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-bold text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-        >
-          {busy ? '配置中…' : `✨ 依需求重新配置（${count} 件家具）`}
-        </button>
-        {count === 0 && <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-800">房間裡還沒有家具，先到「家具庫」加入幾件吧。</p>}
+        <p className={helpTextClass}>內建規則一定會做到：家具不穿牆、不重疊、不擋門；床、沙發、櫃子靠牆；保留 90 公分主要走道；床頭避開窗戶下方；不擋開關插座。</p>
+        <Button disabled={busy || count === 0} onClick={() => arrange()} className="w-full">
+          <Sparkles size={16} strokeWidth={1.75} />
+          {busy ? '配置中…' : `依需求重新配置（${count} 件家具）`}
+        </Button>
+        {count === 0 && <p className={noteClass.warn}>房間裡還沒有家具，先到「家具庫」加入幾件吧。</p>}
       </section>
 
-      <section className="flex flex-col gap-2 border-t border-slate-100 pt-3">
+      <section className="flex flex-col gap-3 border-t border-line pt-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-700">用一句話告訴我</span>
-          <button
-            onClick={clearChat}
-            disabled={busy || messages.length === 0}
-            className="rounded-md px-2 py-1 text-[11px] text-slate-500 hover:bg-slate-100 hover:text-red-600 disabled:opacity-40"
-          >
+          <span className={subTitleClass}>用一句話告訴我</span>
+          <button onClick={clearChat} disabled={busy || messages.length === 0} className="rounded-pill px-2 py-1 text-[11px] text-ink-3 transition-colors hover:bg-surface hover:text-danger disabled:opacity-40">
             清除紀錄
           </button>
         </div>
-        {messages.length === 0 && <p className="text-[11px] text-slate-400">例如：「床靠窗」「書桌放窗邊」「家裡有人坐輪椅」「想要寬敞一點」。我會幫你打開對應的需求再重新配置。</p>}
+        {messages.length === 0 && <p className={helpTextClass}>例如：「床靠窗」「書桌放窗邊」「家裡有人坐輪椅」「想要寬敞一點」。我會幫你打開對應的需求再重新配置。</p>}
         <div className="flex flex-col gap-2">
           {messages.map((m, i) => (
             <div
               key={i}
-              className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+              className={`max-w-[88%] rounded-card px-3.5 py-2 text-sm leading-relaxed ${
                 m.role === 'user'
-                  ? 'self-end rounded-br-sm bg-sky-600 text-white'
+                  ? 'self-end rounded-br-md bg-brand-500 text-white'
                   : m.kind === 'error'
-                    ? 'self-start rounded-bl-sm bg-red-50 text-red-700'
+                    ? 'self-start rounded-bl-md bg-danger/10 text-danger'
                     : m.kind === 'warn'
-                      ? 'self-start rounded-bl-sm bg-amber-50 text-amber-800'
-                      : 'self-start rounded-bl-sm bg-slate-100 text-slate-800'
+                      ? 'self-start rounded-bl-md bg-brand-50 text-brand-700'
+                      : 'self-start rounded-bl-md bg-surface text-ink'
               }`}
             >
               {m.text}
               {m.role === 'ai' && <UndoLayoutButton revision={m.revision} />}
             </div>
           ))}
-          {busy && <div className="self-start rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-500">排列中…</div>}
+          {busy && <div className="self-start rounded-card rounded-bl-md bg-surface px-3.5 py-2 text-sm text-ink-3">排列中…</div>}
           <div ref={endRef} />
         </div>
         <form
@@ -134,15 +120,10 @@ export default function ChatPanel() {
           }}
           className="sticky bottom-0 flex gap-2 bg-white py-1"
         >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="例如：床靠窗、留輪椅走道…"
-            className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-300"
-          />
-          <button disabled={busy || !input.trim()} className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-bold text-white disabled:bg-slate-300">
-            送出
-          </button>
+          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="例如：床靠窗、留輪椅走道…" className={inputClass} aria-label="輸入需求" />
+          <Button disabled={busy || !input.trim()} aria-label="送出" className="shrink-0 px-4">
+            <Send size={16} strokeWidth={1.75} />
+          </Button>
         </form>
       </section>
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useLayoutEffect, useRef, useState } from 'react'
+import { Check, Hand, Minus, Plus, Sparkles, X } from 'lucide-react'
 import { useRoomStore } from '@/store/useRoomStore'
 import { bbox, clampItem, uid, wallPoint } from '@/lib/geometry'
 import { itemTypeInfo, WALL_ITEM_TYPES, type PhotoBounds, type WallItem, type WallItemType } from '@/types/room'
@@ -358,14 +359,14 @@ export default function PhotoMarker({
 
   const selected = items.find((it) => it.id === selectedItemId)
   const tabBtn = (active: boolean) =>
-    `flex-1 rounded-md px-2 py-1.5 text-xs font-semibold ${active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`
-  const ctrlBtn = 'flex h-8 min-w-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40'
+    `inline-flex flex-1 items-center justify-center gap-1 rounded-pill px-2 py-1.5 text-xs font-medium transition-[background-color,color,box-shadow] duration-200 ease-soft ${active ? 'bg-white text-ink shadow-card' : 'text-ink-3 hover:text-ink'}`
+  const ctrlBtn = 'inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-pill border border-line bg-white px-2.5 text-xs font-medium text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface disabled:opacity-40'
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+      <div className="flex gap-1 rounded-pill bg-surface p-1">
         <button className={tabBtn(mode === 'bounds')} onClick={() => setMode('bounds')}>
-          ① 標出牆角{bounds ? ' ✓' : ''}
+          ① 標出牆角{bounds && <Check size={12} strokeWidth={2.5} />}
         </button>
         <button className={tabBtn(mode === 'draw')} onClick={() => setMode('draw')}>
           ② 框選物件
@@ -373,8 +374,8 @@ export default function PhotoMarker({
       </div>
 
       {mode === 'bounds' ? (
-        <p className="rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] leading-relaxed text-amber-800">
-          拖曳四條黃色線，對齊照片中這面牆的<b>左右牆角</b>、<b>天花板交界</b>和<b>地板交界</b>。物件的位置會依照這四條線換算成公尺。
+        <p className="rounded-field bg-brand-50 px-2 py-1.5 text-[11px] leading-relaxed text-brand-700">
+          拖曳四條標線，對齊照片中這面牆的<b>左右牆角</b>、<b>天花板交界</b>和<b>地板交界</b>。物件的位置會依照這四條線換算成公尺。
         </p>
       ) : (
         <div className="flex flex-col gap-1.5">
@@ -383,8 +384,8 @@ export default function PhotoMarker({
               <button
                 key={t.value}
                 onClick={() => setTool(t.value)}
-                className={`flex items-center justify-center gap-1 rounded-md border px-1 py-1.5 text-[11px] font-semibold ${
-                  tool === t.value ? 'border-transparent text-white shadow' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                className={`flex items-center justify-center gap-1 rounded-field border px-1 py-1.5 text-[11px] font-medium transition-colors duration-200 ease-soft ${
+                  tool === t.value ? 'border-transparent text-white shadow-card' : 'border-line bg-white text-ink-2 hover:bg-surface'
                 }`}
                 style={tool === t.value ? { background: t.color } : undefined}
               >
@@ -394,8 +395,8 @@ export default function PhotoMarker({
             ))}
           </div>
           {CEILING_TYPES.includes(tool) && (
-            <label className="flex items-center gap-1.5 text-[11px] text-slate-600">
-              <input type="checkbox" checked={onCeiling} onChange={(e) => setOnCeiling(e.target.checked)} className="accent-sky-600" />
+            <label className="flex items-center gap-1.5 text-[11px] text-ink-2">
+              <input type="checkbox" checked={onCeiling} onChange={(e) => setOnCeiling(e.target.checked)} className="accent-brand-500" />
               這是天花板上的{itemTypeInfo(tool).label}（不是裝在牆上）
             </label>
           )}
@@ -414,7 +415,7 @@ export default function PhotoMarker({
             onAcceptAll={() => suggestions.forEach(acceptSuggestion)}
             onDismissAll={() => setDismissed((d) => [...d, ...suggestions.map((sg) => sg.id)])}
           />
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-ink-3">
             在照片上拖曳畫框新增「{itemTypeInfo(tool).label}」{ceilingMode ? '（天花板）' : ''}。點框可以選取，拖曳移動，拉四個角改大小。
           </p>
         </div>
@@ -422,24 +423,25 @@ export default function PhotoMarker({
 
       <div className="flex items-center gap-1">
         <button className={ctrlBtn} onClick={() => zoomTo(zoom / 1.5)} disabled={zoom <= MIN_ZOOM} aria-label="縮小">
-          －
+          <Minus size={14} strokeWidth={2} />
         </button>
-        <span className="w-12 text-center text-xs tabular-nums text-slate-600">{Math.round(zoom * 100)}%</span>
+        <span className="w-12 text-center text-xs tabular-nums text-ink-2">{Math.round(zoom * 100)}%</span>
         <button className={ctrlBtn} onClick={() => zoomTo(zoom * 1.5)} disabled={zoom >= MAX_ZOOM} aria-label="放大">
-          ＋
+          <Plus size={14} strokeWidth={2} />
         </button>
         <button
-          className={`${ctrlBtn} ${hand ? 'border-sky-400 bg-sky-50 text-sky-700' : ''}`}
+          className={`${ctrlBtn} ${hand ? 'border-brand-400 bg-brand-50 text-brand-700' : ''}`}
           onClick={() => setHand((h) => !h)}
           aria-pressed={hand}
           title="移動畫面"
         >
-          ✋ 移動畫面
+          <Hand size={14} strokeWidth={1.75} />
+          移動畫面
         </button>
-        <span className="ml-auto hidden text-[10px] text-slate-400 sm:block">手機可用雙指縮放</span>
+        <span className="ml-auto hidden text-[10px] text-ink-4 sm:block">手機可用雙指縮放</span>
       </div>
 
-      <div ref={viewportRef} className="relative max-h-[65vh] touch-none overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-slate-800">
+      <div ref={viewportRef} className="relative max-h-[65vh] touch-none overflow-auto overscroll-contain rounded-field border border-line-2 bg-ink">
         <div
           ref={surfaceRef}
           className={`relative overflow-hidden select-none ${hand ? 'cursor-grab' : mode === 'draw' ? 'cursor-crosshair' : ''}`}
@@ -476,7 +478,7 @@ export default function PhotoMarker({
               <div
                 key={it.id}
                 onPointerDown={queueItem(it, 'move')}
-                className={`absolute rounded-sm border-2 ${interactive ? 'cursor-move' : 'pointer-events-none'} ${sel ? 'z-10 ring-2 ring-amber-300' : ''}`}
+                className={`absolute rounded-sm border-2 ${interactive ? 'cursor-move' : 'pointer-events-none'} ${sel ? 'z-10 ring-2 ring-brand-400' : ''}`}
                 style={{
                   left: `${r.x0 * 100}%`,
                   top: `${r.y0 * 100}%`,
@@ -488,7 +490,7 @@ export default function PhotoMarker({
                   minHeight: 8,
                 }}
               >
-                <span className="pointer-events-none absolute -top-4 left-0 whitespace-nowrap rounded px-1 text-[9px] font-semibold leading-4 text-white" style={{ background: info.color }}>
+                <span className="pointer-events-none absolute -top-4 left-0 whitespace-nowrap rounded px-1 text-[9px] font-medium leading-4 text-white" style={{ background: info.color }}>
                   {info.label}
                 </span>
                 {sel &&
@@ -497,7 +499,7 @@ export default function PhotoMarker({
                     <span
                       key={c}
                       onPointerDown={queueItem(it, c)}
-                      className="absolute h-4 w-4 rounded-full border-2 border-white bg-amber-500 shadow"
+                      className="absolute h-4 w-4 rounded-full border-2 border-white bg-brand-500 shadow-card"
                       style={{
                         left: c === 'nw' || c === 'sw' ? -8 : undefined,
                         right: c === 'ne' || c === 'se' ? -8 : undefined,
@@ -529,20 +531,20 @@ export default function PhotoMarker({
                   }}
                 >
                   <span
-                    className="pointer-events-auto absolute left-0 flex items-center gap-0.5 whitespace-nowrap rounded-md bg-white/95 py-0.5 pl-1.5 pr-0.5 text-[10px] font-semibold shadow"
+                    className="pointer-events-auto absolute left-0 flex items-center gap-0.5 whitespace-nowrap rounded-md bg-white/95 py-0.5 pl-1.5 pr-0.5 text-[10px] font-medium shadow-card"
                     style={{ color: info.color, top: sg.y0 > 0.06 ? -24 : 2 }}
                     onPointerDown={(e) => e.stopPropagation()}
                   >
                     {info.label} {Math.round(sg.score * 100)}%
-                    <button onClick={() => acceptSuggestion(sg)} className="ml-0.5 rounded bg-emerald-500 px-1.5 text-white hover:bg-emerald-600" aria-label={`採用${info.label}`}>
-                      ✓
+                    <button onClick={() => acceptSuggestion(sg)} className="ml-0.5 inline-flex h-4 items-center rounded-pill bg-success px-1.5 text-white hover:bg-success/90" aria-label={`採用${info.label}`}>
+                      <Check size={11} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={() => setDismissed((d) => [...d, sg.id])}
-                      className="rounded px-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      className="inline-flex h-4 items-center rounded-pill px-1.5 text-ink-4 hover:bg-surface-2 hover:text-ink"
                       aria-label={`略過${info.label}`}
                     >
-                      ✕
+                      <X size={11} strokeWidth={2} />
                     </button>
                   </span>
                 </div>
@@ -578,10 +580,10 @@ export default function PhotoMarker({
                     : { top: `${pos}%`, left: 0, right: 0, height: 28, marginTop: -14, cursor: active ? 'ns-resize' : undefined }
                 }
               >
-                <div className={`${vertical ? 'h-full w-0.5' : 'h-0.5 w-full'} ${active ? 'bg-amber-400' : 'bg-amber-400/50'}`} />
+                <div className={`${vertical ? 'h-full w-0.5' : 'h-0.5 w-full'} ${active ? 'bg-brand-400' : 'bg-brand-400/50'}`} />
                 {active && (
                   <span
-                    className="absolute whitespace-nowrap rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950 shadow"
+                    className="absolute whitespace-nowrap rounded-full bg-brand-400 px-2 py-0.5 text-[10px] font-bold text-white shadow-card"
                     style={
                       vertical
                         ? { top: g.key === 'x0' ? '30%' : '60%', ...(g.key === 'x0' ? { left: 16 } : { right: 16 }) }
@@ -603,7 +605,7 @@ export default function PhotoMarker({
             onClick={() => {
               commitBounds(FULL)
             }}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+            className="inline-flex h-9 items-center rounded-pill border border-line bg-white px-3.5 text-xs font-medium text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface"
           >
             重設為整張照片
           </button>
@@ -612,23 +614,23 @@ export default function PhotoMarker({
               if (!bounds) commitBounds(b)
               setMode('draw')
             }}
-            className="flex-1 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-500"
+            className="inline-flex h-9 flex-1 items-center justify-center rounded-pill bg-brand-500 px-3 text-xs font-medium text-white shadow-hairline transition-colors duration-200 ease-soft hover:bg-brand-600"
           >
-            牆角標好了，開始框選物件 →
+            牆角標好了，開始框選物件
           </button>
         </div>
       )}
 
       {mode === 'draw' && selected && (
-        <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs">
-          <span className="font-semibold text-amber-800">已選取</span>
+        <div className="flex items-center gap-2 rounded-field border border-brand-200 bg-brand-50 px-2.5 py-1.5 text-xs">
+          <span className="font-medium text-brand-700">已選取</span>
           <select
             value={selected.type}
             onChange={(e) => {
               const t = e.target.value as WallItemType
               updateItem(wallIndex, selected.id, { type: t, label: itemTypeInfo(t).label })
             }}
-            className="rounded-md border border-slate-200 bg-white px-1.5 py-1 text-xs"
+            className="h-7 rounded-field border border-line bg-white px-1.5 text-xs outline-none focus:border-brand-400"
           >
             {WALL_ITEM_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -636,7 +638,7 @@ export default function PhotoMarker({
               </option>
             ))}
           </select>
-          <span className="tabular-nums text-slate-500">
+          <span className="tabular-nums text-ink-3">
             {selected.width.toFixed(2)}×{selected.height.toFixed(2)} m
           </span>
           <button
@@ -644,7 +646,7 @@ export default function PhotoMarker({
               removeItem(wallIndex, selected.id)
               selectItem(null)
             }}
-            className="ml-auto rounded-md bg-white px-2 py-1 font-semibold text-red-600 hover:bg-red-50"
+            className="ml-auto rounded-pill bg-white px-2.5 py-1 font-medium text-danger hover:bg-danger/10"
           >
             刪除
           </button>
@@ -653,13 +655,13 @@ export default function PhotoMarker({
 
       {wallCeiling.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 text-[11px]">
-          <span className="text-slate-500">從這面牆標的天花板物件：</span>
+          <span className="text-ink-3">從這面牆標的天花板物件：</span>
           {wallCeiling.map((c) => (
-            <span key={c.id} className="flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pl-2 pr-1">
+            <span key={c.id} className="flex items-center gap-1 rounded-pill bg-surface py-0.5 pl-2 pr-1">
               <span className="h-2 w-2 rounded-full" style={{ background: itemTypeInfo(c.type).color }} />
               {c.label}
-              <button onClick={() => removeCeilingItem(c.id)} className="px-1 text-slate-400 hover:text-red-500" aria-label={`刪除${c.label}`}>
-                ✕
+              <button onClick={() => removeCeilingItem(c.id)} className="inline-flex items-center px-1 text-ink-4 hover:text-danger" aria-label={`刪除${c.label}`}>
+                <X size={11} strokeWidth={2} />
               </button>
             </span>
           ))}
@@ -694,8 +696,8 @@ function DetectBar({
 }) {
   if (state.status === 'unsupported')
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-2 py-1.5 text-[11px] text-slate-500">
-        <button disabled className="shrink-0 rounded-md bg-slate-300 px-2 py-1 font-semibold text-white">
+      <div className="flex items-center gap-2 rounded-field bg-surface px-2 py-1.5 text-[11px] text-ink-3">
+        <button disabled className="shrink-0 rounded-pill bg-line-2 px-2.5 py-1 font-medium text-white">
           此裝置不支援
         </button>
         <span className="min-w-0 truncate" title={state.reason}>
@@ -705,15 +707,15 @@ function DetectBar({
     )
   if (state.status === 'consent')
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-violet-200 bg-violet-50 p-2 text-[11px] leading-relaxed text-violet-900">
+      <div className="flex flex-col gap-2 rounded-field border border-brand-200 bg-brand-50 p-2 text-[11px] leading-relaxed text-brand-800">
         <p>
           第一次使用需要下載辨識模型（{DETECT_MODEL.sizeMB}，OWLv2，{DETECT_MODEL.license} 授權）。模型只在你的瀏覽器裡執行，照片不會上傳；下載後會存在瀏覽器，下次不用再下載。建議使用 Wi-Fi。
         </p>
         <div className="flex gap-2">
-          <button onClick={onCancelConsent} className="rounded-md border border-violet-200 bg-white px-3 py-1 font-semibold text-violet-700 hover:bg-violet-100">
+          <button onClick={onCancelConsent} className="rounded-pill border border-brand-200 bg-white px-3 py-1 font-medium text-brand-700 hover:bg-brand-100">
             先不要
           </button>
-          <button onClick={onConsent} className="flex-1 rounded-md bg-violet-600 px-3 py-1 font-bold text-white hover:bg-violet-500">
+          <button onClick={onConsent} className="flex-1 rounded-pill bg-brand-500 px-3 py-1 font-medium text-white hover:bg-brand-600">
             下載並開始辨識
           </button>
         </div>
@@ -722,39 +724,40 @@ function DetectBar({
   if (state.status === 'working') {
     const p = state.progress
     return (
-      <div className="flex flex-col gap-1 rounded-lg bg-violet-50 px-2 py-1.5 text-[11px] text-violet-800">
+      <div className="flex flex-col gap-1 rounded-field bg-brand-50 px-2 py-1.5 text-[11px] text-brand-700">
         <span>
           {p.phase === 'download' ? `下載模型中… ${Math.round(p.percent)}%` : '辨識中…（約 20～60 秒，視裝置而定，畫面仍可操作）'}
                   </span>
-        <div className="h-1.5 overflow-hidden rounded-full bg-violet-100">
-          <div className={`h-full rounded-full bg-violet-500 transition-all ${p.phase === 'running' ? 'animate-pulse' : ''}`} style={{ width: `${p.phase === 'running' ? 100 : p.percent}%` }} />
+        <div className="h-1.5 overflow-hidden rounded-full bg-brand-100">
+          <div className={`h-full rounded-full bg-brand-500 transition-all ${p.phase === 'running' ? 'animate-pulse' : ''}`} style={{ width: `${p.phase === 'running' ? 100 : p.percent}%` }} />
         </div>
       </div>
     )
   }
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg bg-violet-50 px-2 py-1.5 text-[11px] text-violet-900">
+    <div className="flex flex-col gap-1.5 rounded-field bg-brand-50 px-2 py-1.5 text-[11px] text-brand-800">
       <div className="flex items-center gap-2">
-        <button onClick={onRun} className="shrink-0 rounded-md bg-violet-600 px-2.5 py-1 font-bold text-white hover:bg-violet-500">
-          ✨ 自動找找看
+        <button onClick={onRun} className="inline-flex h-7 shrink-0 items-center gap-1 rounded-pill bg-brand-500 px-3 font-medium text-white transition-colors hover:bg-brand-600">
+          <Sparkles size={12} strokeWidth={1.75} />
+          自動找找看
         </button>
-        <span className="min-w-0 text-violet-700">
-          {state.status === 'done' ? (count ? `找到 ${count} 個建議（虛線框），按 ✓ 採用` : found ? '建議都處理完了；調低門檻可以看更多' : '沒有找到建議，可以手動框選') : '在瀏覽器裡辨識門窗插座，結果只是建議'}
+        <span className="min-w-0 text-brand-700">
+          {state.status === 'done' ? (count ? `找到 ${count} 個建議（虛線框），按打勾採用` : found ? '建議都處理完了；調低門檻可以看更多' : '沒有找到建議，可以手動框選') : '在瀏覽器裡辨識門窗插座，結果只是建議'}
         </span>
       </div>
       {state.status === 'done' && (
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-1.5">
             門檻
-            <input type="range" min={0.05} max={0.5} step={0.01} value={threshold} onChange={(e) => onThreshold(Number(e.target.value))} className="w-24 accent-violet-600" />
+            <input type="range" min={0.05} max={0.5} step={0.01} value={threshold} onChange={(e) => onThreshold(Number(e.target.value))} className="w-24 accent-brand-500" />
             <span className="w-8 tabular-nums">{Math.round(threshold * 100)}%</span>
           </label>
           {count > 0 && (
             <span className="ml-auto flex gap-1">
-              <button onClick={onDismissAll} className="rounded-md border border-violet-200 bg-white px-2 py-0.5 font-semibold text-violet-700 hover:bg-violet-100">
+              <button onClick={onDismissAll} className="rounded-pill border border-brand-200 bg-white px-2.5 py-0.5 font-medium text-brand-700 hover:bg-brand-100">
                 全部略過
               </button>
-              <button onClick={onAcceptAll} className="rounded-md bg-emerald-600 px-2 py-0.5 font-semibold text-white hover:bg-emerald-500">
+              <button onClick={onAcceptAll} className="rounded-pill bg-success px-2.5 py-0.5 font-medium text-white hover:bg-success/90">
                 全部採用
               </button>
             </span>

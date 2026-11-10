@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 export default function NumberField({
   label,
@@ -17,7 +17,7 @@ export default function NumberField({
   value: number
   onCommit: (v: number) => void
   step?: number
-  suffix?: string
+  suffix?: ReactNode
   validate?: (v: number) => string | null
   compact?: boolean
   digits?: number
@@ -49,12 +49,12 @@ export default function NumberField({
   }
 
   return (
-    <label className={`flex flex-col gap-1 ${compact ? 'text-[11px]' : 'text-xs'}`}>
-      {label && <span className="font-medium text-slate-500">{label}</span>}
+    <label className="flex flex-col gap-1">
+      {label && <span className="text-xs font-medium text-ink-3">{label}</span>}
       <span
-        className={`flex items-center rounded-lg border px-2 focus-within:ring-2 focus-within:ring-sky-300 ${
-          error ? 'border-red-400' : 'border-slate-200'
-        } ${disabled ? 'bg-slate-100' : 'bg-white'}`}
+        className={`flex items-center rounded-field border transition-[border-color,box-shadow] duration-200 ease-soft focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200 ${
+          compact ? 'h-8 px-2.5' : 'h-10 px-3'
+        } ${error ? 'border-danger/60' : 'border-line'} ${disabled ? 'bg-surface' : 'bg-white'}`}
       >
         <input
           type="number"
@@ -71,11 +71,11 @@ export default function NumberField({
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
           }}
-          className={`w-full min-w-0 bg-transparent disabled:text-slate-500 outline-none ${compact ? 'py-1 text-xs' : 'py-1.5 text-sm'} tabular-nums text-slate-800`}
+          className={`w-full min-w-0 bg-transparent tabular-nums text-ink outline-none disabled:text-ink-3 ${compact ? 'text-xs' : 'text-sm'}`}
         />
-        <span className="pl-1 text-slate-400">{suffix}</span>
+        <span className={`flex shrink-0 items-center pl-1 text-ink-4 ${compact ? 'text-[11px]' : 'text-xs'}`}>{suffix}</span>
       </span>
-      {error && <span className="text-[11px] text-red-500">{error}</span>}
+      {error && <span className="text-[11px] text-danger">{error}</span>}
     </label>
   )
 }

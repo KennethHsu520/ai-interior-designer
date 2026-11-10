@@ -1,16 +1,24 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import { LogOut, Plus, Sofa } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { getSupabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/adminApi'
 import { fetchRemoteCatalog, loadCatalog } from '@/lib/catalogLoader'
 import type { CatalogItem } from '@/types/room'
+import Wordmark from '@/components/ui/Wordmark'
+import Button from '@/components/ui/Button'
+import { inputClass, labelClass, noteClass, smallBtnClass } from '@/components/ui/fields'
 import FurnitureList from './FurnitureList'
 import NewFurniture from './NewFurniture'
 
 type Tab = 'list' | 'new'
+
+const tabClass = (active: boolean) =>
+  `flex flex-1 items-center justify-center gap-1.5 rounded-pill py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ease-soft ${
+    active ? 'bg-white text-ink shadow-card' : 'text-ink-3 hover:text-ink'
+  }`
 
 export default function AdminApp() {
   const supabase = getSupabase()
@@ -70,10 +78,10 @@ export default function AdminApp() {
   if (!supabase)
     return (
       <Frame>
-        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">尚未設定 Supabase。請在 .env.local 填入 NEXT_PUBLIC_SUPABASE_URL 與 NEXT_PUBLIC_SUPABASE_ANON_KEY。</p>
+        <p className={noteClass.warn}>尚未設定 Supabase。請在 .env.local 填入 NEXT_PUBLIC_SUPABASE_URL 與 NEXT_PUBLIC_SUPABASE_ANON_KEY。</p>
       </Frame>
     )
-  if (!ready) return <Frame>連線中…</Frame>
+  if (!ready) return <Frame><Pending text="連線中…" /></Frame>
   if (!session)
     return (
       <Frame>
@@ -83,30 +91,33 @@ export default function AdminApp() {
 
   const signOut = () => supabase.auth.signOut()
 
-  if (admin === null) return <Frame>確認權限中…</Frame>
+  if (admin === null) return <Frame email={session.user.email} onSignOut={signOut}><Pending text="確認權限中…" /></Frame>
   if (!admin)
     return (
       <Frame email={session.user.email} onSignOut={signOut}>
-        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
-          <h2 className="text-base font-bold">這個帳號還不是管理員</h2>
+        <div className="mx-auto flex w-full max-w-xl flex-col gap-3 rounded-card border border-line bg-white p-6 text-sm text-ink-2 shadow-hairline">
+          <h2 className="text-[17px] font-bold tracking-tight text-ink">這個帳號還不是管理員</h2>
           <p>請網站負責人在 Supabase 後台的 SQL Editor 執行下面這行，把你加入管理員，然後重新整理本頁：</p>
-          <pre className="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{`insert into public.admins (user_id) values ('${session.user.id}');`}</pre>
-          <p className="text-xs text-slate-500">你的使用者 ID：{session.user.id}</p>
+          <pre className="overflow-x-auto rounded-field bg-ink p-3 text-xs text-white">{`insert into public.admins (user_id) values ('${session.user.id}');`}</pre>
+          <p className="text-xs text-ink-3">你的使用者 ID：{session.user.id}</p>
         </div>
       </Frame>
     )
 
   return (
     <Frame email={session.user.email} onSignOut={signOut}>
-      <div className="flex gap-1 rounded-xl bg-slate-200/70 p-1 text-sm font-semibold">
-        <button onClick={() => setTab('list')} className={`flex-1 rounded-lg py-2 ${tab === 'list' ? 'bg-white shadow' : 'text-slate-500'}`}>
-          家具列表（{items.length}）
+      <div className="flex rounded-pill bg-surface p-1">
+        <button onClick={() => setTab('list')} className={tabClass(tab === 'list')}>
+          <Sofa size={15} strokeWidth={1.75} />
+          家具列表
+          <span className="tabular-nums text-xs font-normal text-ink-4">{items.length}</span>
         </button>
-        <button onClick={() => setTab('new')} className={`flex-1 rounded-lg py-2 ${tab === 'new' ? 'bg-white shadow' : 'text-slate-500'}`}>
-          ＋ 新增家具
+        <button onClick={() => setTab('new')} className={tabClass(tab === 'new')}>
+          <Plus size={15} strokeWidth={2} />
+          新增家具
         </button>
       </div>
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className={noteClass.error}>{error}</p>}
       {tab === 'list' ? (
         <FurnitureList items={items} loading={loading} onChanged={afterChange} />
       ) : (
@@ -122,26 +133,34 @@ export default function AdminApp() {
   )
 }
 
+function Pending({ text }: { text: string }) {
+  return (
+    <div className="flex items-center justify-center gap-3 py-20 text-sm text-ink-3">
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-brand-500" aria-hidden="true" />
+      {text}
+    </div>
+  )
+}
+
 function Frame({ children, email, onSignOut }: { children: React.ReactNode; email?: string; onSignOut?: () => void }) {
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-800">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <Link href="/" className="text-sm font-black">
-            🏠 AI<span className="text-sky-600">室內設計師</span>
-          </Link>
-          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-white">家具庫管理</span>
+    <div className="min-h-dvh bg-canvas text-ink">
+      <header className="sticky top-0 z-10 border-b border-line/70 bg-canvas/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-6">
+          <Wordmark compact />
+          <span className="rounded-pill bg-brand-100 px-2.5 py-0.5 text-[11px] font-medium text-brand-700">家具庫管理</span>
           {email && (
-            <span className="ml-auto flex items-center gap-2 text-xs text-slate-500">
+            <span className="ml-auto flex items-center gap-3 text-xs text-ink-3">
               <span className="hidden sm:inline">{email}</span>
-              <button onClick={onSignOut} className="rounded-md border border-slate-200 px-2 py-1 hover:bg-slate-50">
+              <button onClick={onSignOut} className={smallBtnClass}>
+                <LogOut size={14} strokeWidth={1.75} />
                 登出
               </button>
             </span>
           )}
         </div>
       </header>
-      <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6">{children}</main>
+      <main className="mx-auto flex max-w-5xl flex-col gap-5 px-6 py-8">{children}</main>
     </div>
   )
 }
@@ -178,28 +197,24 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto flex w-full max-w-sm flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-lg font-black">{mode === 'signin' ? '管理員登入' : '註冊管理員帳號'}</h1>
-      <p className="text-xs text-slate-500">只有被加入管理員名單的帳號可以新增或修改家具。</p>
-      <label className="flex flex-col gap-1 text-xs font-semibold text-slate-600">
-        Email
-        <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:ring-2 focus:ring-sky-300" />
+    <form onSubmit={submit} className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-4 rounded-hero border border-line bg-white p-8 shadow-card">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-h3 font-bold text-ink">{mode === 'signin' ? '管理員登入' : '註冊管理員帳號'}</h1>
+        <p className="text-sm text-ink-3">只有被加入管理員名單的帳號可以新增或修改家具。</p>
+      </div>
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Email</span>
+        <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
       </label>
-      <label className="flex flex-col gap-1 text-xs font-semibold text-slate-600">
-        密碼（至少 8 碼）
-        <input
-          type="password"
-          autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:ring-2 focus:ring-sky-300"
-        />
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>密碼（至少 8 碼）</span>
+        <input type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
       </label>
-      {msg && <p className={`rounded-lg px-3 py-2 text-xs ${msg.kind === 'ok' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{msg.text}</p>}
-      <button disabled={!valid || busy} className="rounded-lg bg-slate-900 px-3 py-2.5 text-sm font-bold text-white disabled:bg-slate-300">
+      {msg && <p className={noteClass[msg.kind]}>{msg.text}</p>}
+      <Button disabled={!valid || busy} className="mt-1 w-full">
         {busy ? '處理中…' : mode === 'signin' ? '登入' : '註冊'}
-      </button>
-      <button type="button" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')} className="text-xs text-sky-600 hover:underline">
+      </Button>
+      <button type="button" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')} className="text-sm text-brand-600 transition-colors hover:text-brand-700">
         {mode === 'signin' ? '還沒有帳號？註冊' : '已有帳號？登入'}
       </button>
     </form>
