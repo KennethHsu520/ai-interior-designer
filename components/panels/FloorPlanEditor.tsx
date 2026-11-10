@@ -17,6 +17,7 @@ import {
 } from '@/lib/geometry'
 import { constrainVertex, lockViolation, locksOf, solveFloor, type FloorEdit } from '@/lib/floorSolver'
 import type { Vec2, Wall } from '@/types/room'
+import { ChevronRight, Lock, LockOpen, Plus, Redo2, Undo2 } from 'lucide-react'
 import NumberField from '@/components/ui/NumberField'
 
 const SNAP = 0.01
@@ -213,10 +214,10 @@ export default function FloorPlanEditor() {
 
   const gridLines: React.ReactNode[] = []
   for (let x = Math.floor(vb.x); x <= vb.x + vb.w; x += 0.5) {
-    gridLines.push(<line key={`x${x}`} x1={x} y1={vb.y} x2={x} y2={vb.y + vb.h} stroke={Number.isInteger(x) ? '#cbd5e1' : '#e2e8f0'} strokeWidth={unit * 0.08} />)
+    gridLines.push(<line key={`x${x}`} x1={x} y1={vb.y} x2={x} y2={vb.y + vb.h} stroke={Number.isInteger(x) ? '#d6d3cd' : '#e5e3df'} strokeWidth={unit * 0.08} />)
   }
   for (let z = Math.floor(vb.y); z <= vb.y + vb.h; z += 0.5) {
-    gridLines.push(<line key={`z${z}`} x1={vb.x} y1={z} x2={vb.x + vb.w} y2={z} stroke={Number.isInteger(z) ? '#cbd5e1' : '#e2e8f0'} strokeWidth={unit * 0.08} />)
+    gridLines.push(<line key={`z${z}`} x1={vb.x} y1={z} x2={vb.x + vb.w} y2={z} stroke={Number.isInteger(z) ? '#d6d3cd' : '#e5e3df'} strokeWidth={unit * 0.08} />)
   }
 
   const wallCursor = (i: number) => {
@@ -229,29 +230,30 @@ export default function FloorPlanEditor() {
   const prevWall = (v: number) => (v - 1 + n) % n
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-2 sm:p-6">
-      <div className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-2 backdrop-blur-sm sm:p-6">
+      <div className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-hero bg-white shadow-float">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0">
-            <h2 className="text-base font-bold text-slate-800">自訂格局（俯視圖）</h2>
-            <p className="text-xs text-slate-500">拖曳牆面＝平行移動・拖曳轉角＝移動・雙擊牆面＝加轉折點・鎖住的數值不會被改動・橘色扇形為開門範圍・每格 0.5m</p>
+            <h2 className="text-base font-bold text-ink">自訂格局（俯視圖）</h2>
+            <p className="text-xs text-ink-3">拖曳牆面＝平行移動・拖曳轉角＝移動・雙擊牆面＝加轉折點・鎖住的數值不會被改動・橘色扇形為開門範圍・每格 0.5m</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <button
               onClick={undo}
               disabled={past.length === 0}
               title="復原（Ctrl+Z）"
-              className="rounded-lg border border-slate-200 px-2.5 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+              className="inline-flex h-9 items-center gap-1 rounded-pill border border-line bg-white px-3 text-xs font-medium text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface disabled:opacity-30"
             >
-              ↶ 復原
+              <Undo2 size={14} strokeWidth={1.75} />
+              復原
             </button>
             <button
               onClick={redo}
               disabled={future.length === 0}
               title="重做（Ctrl+Y）"
-              className="rounded-lg border border-slate-200 px-2.5 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-pill border border-line bg-white text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface disabled:opacity-30"
             >
-              ↷
+              <Redo2 size={14} strokeWidth={1.75} />
             </button>
             <button
               onClick={() => {
@@ -261,14 +263,14 @@ export default function FloorPlanEditor() {
                 setFuture([])
                 setNotice(null)
               }}
-              className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+              className="inline-flex h-9 items-center rounded-pill bg-brand-500 px-4 text-sm font-medium text-white shadow-hairline transition-colors duration-200 ease-soft hover:bg-brand-600"
             >
               完成
             </button>
           </div>
         </div>
 
-        <div className="relative min-h-0 flex-1 bg-slate-50">
+        <div className="relative min-h-0 flex-1 bg-surface">
           <svg
             ref={svgRef}
             viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
@@ -295,8 +297,8 @@ export default function FloorPlanEditor() {
             {gridLines}
             <polygon
               points={shown.map((p) => `${p.x},${p.z}`).join(' ')}
-              fill={previewError ? '#fee2e2' : '#e0f2fe'}
-              stroke={previewError ? '#ef4444' : '#0f172a'}
+              fill={previewError ? '#f7e3da' : '#faf4f0'}
+              stroke={previewError ? '#c2410c' : '#1d1d1f'}
               strokeWidth={unit * 0.35}
               strokeLinejoin="round"
               className="pointer-events-none"
@@ -315,7 +317,7 @@ export default function FloorPlanEditor() {
                       <g key={it.id} className="pointer-events-none">
                         <line x1={a.x} y1={a.z} x2={b.x} y2={b.z} stroke="#ffffff" strokeWidth={unit * 0.9} />
                         {[-1, 0, 1].map((k) => (
-                          <line key={k} x1={a.x + s.normal.x * o * k} y1={a.z + s.normal.z * o * k} x2={b.x + s.normal.x * o * k} y2={b.z + s.normal.z * o * k} stroke="#0284c7" strokeWidth={unit * 0.14} />
+                          <line key={k} x1={a.x + s.normal.x * o * k} y1={a.z + s.normal.z * o * k} x2={b.x + s.normal.x * o * k} y2={b.z + s.normal.z * o * k} stroke="#a65a3a" strokeWidth={unit * 0.14} />
                         ))}
                       </g>
                     )
@@ -326,9 +328,9 @@ export default function FloorPlanEditor() {
                   return (
                     <g key={it.id} className="pointer-events-none">
                       <line x1={a.x} y1={a.z} x2={b.x} y2={b.z} stroke="#ffffff" strokeWidth={unit * 0.9} />
-                      <path d={path} fill="#f59e0b" fillOpacity={g.swing.side === 'in' ? 0.12 : 0.05} />
-                      <path d={arcPath} fill="none" stroke="#b45309" strokeWidth={unit * 0.12} strokeDasharray={`${unit * 0.5} ${unit * 0.3}`} />
-                      <line x1={g.hinge.x} y1={g.hinge.z} x2={g.leafEnd.x} y2={g.leafEnd.z} stroke="#b45309" strokeWidth={unit * 0.3} strokeLinecap="round" />
+                      <path d={path} fill="#c4815f" fillOpacity={g.swing.side === 'in' ? 0.12 : 0.05} />
+                      <path d={arcPath} fill="none" stroke="#8e4c31" strokeWidth={unit * 0.12} strokeDasharray={`${unit * 0.5} ${unit * 0.3}`} />
+                      <line x1={g.hinge.x} y1={g.hinge.z} x2={g.leafEnd.x} y2={g.leafEnd.z} stroke="#8e4c31" strokeWidth={unit * 0.3} strokeLinecap="round" />
                     </g>
                   )
                 }),
@@ -349,7 +351,7 @@ export default function FloorPlanEditor() {
                     key={`a${i}`}
                     points={`${p1.x},${p1.z} ${p2.x},${p2.z} ${p3.x},${p3.z}`}
                     fill="none"
-                    stroke={locked ? '#d97706' : '#94a3b8'}
+                    stroke={locked ? '#a65a3a' : '#a1a1a6'}
                     strokeWidth={unit * (locked ? 0.3 : 0.2)}
                     className="pointer-events-none"
                   />
@@ -357,19 +359,20 @@ export default function FloorPlanEditor() {
               }
               const lp = cornerLabelPoint(shown, i, unit * 3.2)
               return (
+                <g key={`a${i}`}>
+                  {locked && <LockGlyph x={lp.x} y={lp.z - unit * 1.35} s={unit * 1.1} />}
                 <text
-                  key={`a${i}`}
                   x={lp.x}
                   y={lp.z}
                   fontSize={unit * 1.2}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fill="#b45309"
-                  className="pointer-events-none font-semibold"
+                  fill="#8e4c31"
+                  className="pointer-events-none font-medium"
                 >
-                  {locked ? '🔒' : ''}
                   {formatAngle(deg)}
                 </text>
+                </g>
               )
             })}
 
@@ -386,10 +389,10 @@ export default function FloorPlanEditor() {
                     y1={s.a.z}
                     x2={s.b.x}
                     y2={s.b.z}
-                    stroke={selected || dragging ? '#0284c7' : 'transparent'}
+                    stroke={selected || dragging ? '#a65a3a' : 'transparent'}
                     strokeWidth={unit * (selected || dragging ? 0.9 : 2.2)}
                     strokeLinecap="round"
-                    className={selected || dragging ? '' : 'hover:stroke-sky-400/40'}
+                    className={selected || dragging ? '' : 'hover:stroke-brand-400/40'}
                     style={{ cursor: wallCursor(i) }}
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => {
@@ -427,6 +430,8 @@ export default function FloorPlanEditor() {
                       }}
                     />
                   )}
+                  {locks.lengths[i] && <LockGlyph x={mx - s.normal.x * unit * 2.6} y={mz - s.normal.z * unit * 2.6 - unit * 1.5} s={unit * 1.1} />}
+
                   <text
                     x={mx - s.normal.x * unit * 2.6}
                     y={mz - s.normal.z * unit * 2.6}
@@ -435,11 +440,10 @@ export default function FloorPlanEditor() {
                     dominantBaseline="middle"
                     className="pointer-events-none"
                   >
-                    <tspan fill={selected ? '#0284c7' : '#94a3b8'} fontSize={unit * 1.1}>
+                    <tspan fill={selected ? '#a65a3a' : '#a1a1a6'} fontSize={unit * 1.1}>
                       牆{i + 1}{' '}
                     </tspan>
-                    <tspan fill={selected ? '#0284c7' : '#334155'} fontWeight={700}>
-                      {locks.lengths[i] ? '🔒' : ''}
+                    <tspan fill={selected ? '#a65a3a' : '#424245'} fontWeight={700}>
                       {s.length.toFixed(2)}m
                     </tspan>
                   </text>
@@ -456,8 +460,8 @@ export default function FloorPlanEditor() {
                   cx={p.x}
                   cy={p.z}
                   r={unit * (dragging ? 1.25 : 1)}
-                  fill={selected ? '#f59e0b' : '#ffffff'}
-                  stroke="#0f172a"
+                  fill={selected ? '#c4815f' : '#ffffff'}
+                  stroke="#1d1d1f"
                   strokeWidth={unit * 0.28}
                   className="cursor-grab active:cursor-grabbing"
                   onClick={(e) => e.stopPropagation()}
@@ -469,8 +473,8 @@ export default function FloorPlanEditor() {
 
           {drag && preview && (
             <div
-              className={`pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-lg px-3 py-1.5 text-xs font-semibold text-white shadow ${
-                previewError ? 'bg-red-500' : 'bg-slate-800'
+              className={`pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-pill px-3.5 py-1.5 text-xs font-medium text-white shadow-float ${
+                previewError ? 'bg-danger' : 'bg-ink'
               }`}
             >
               {previewError
@@ -481,15 +485,15 @@ export default function FloorPlanEditor() {
             </div>
           )}
           {notice && !(drag && preview) && (
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow">{notice}</div>
+            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-pill bg-brand-500 px-3.5 py-1.5 text-xs font-medium text-white shadow-float">{notice}</div>
           )}
         </div>
 
-        <div className="flex min-h-[60px] flex-wrap items-end gap-3 border-t border-slate-100 px-4 py-3">
-          {!selection && <span className="self-center text-xs text-slate-400">點一面牆或一個轉角來編輯。修改格局後，被分割或合併的牆需要重新拍照確認。</span>}
+        <div className="flex min-h-[60px] flex-wrap items-end gap-3 border-t border-line px-4 py-3">
+          {!selection && <span className="self-center text-xs text-ink-4">點一面牆或一個轉角來編輯。修改格局後，被分割或合併的牆需要重新拍照確認。</span>}
           {selection?.kind === 'wall' && (
             <>
-              <span className="self-center text-sm font-bold text-sky-700">牆 {selection.index + 1}</span>
+              <span className="self-center text-sm font-bold text-brand-700">牆 {selection.index + 1}</span>
               <div className="flex items-end gap-1">
                 <div className="w-28">
                   <NumberField
@@ -506,16 +510,17 @@ export default function FloorPlanEditor() {
               </div>
               <button
                 onClick={() => addVertex(selection.index)}
-                className="rounded-lg border border-sky-200 px-3 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-50"
+                className="inline-flex h-8 items-center gap-1 rounded-pill border border-brand-200 bg-white px-3 text-xs font-medium text-brand-700 transition-colors duration-200 ease-soft hover:bg-brand-50"
               >
-                ＋ 在中間加轉折點
+                <Plus size={13} strokeWidth={2} />
+                在中間加轉折點
               </button>
-              <span className="self-center text-[11px] text-slate-400">直接拖曳這面牆可以平行移動</span>
+              <span className="self-center text-[11px] text-ink-4">直接拖曳這面牆可以平行移動</span>
             </>
           )}
           {selection?.kind === 'vertex' && (
             <>
-              <span className="self-center text-sm font-bold text-amber-600">
+              <span className="self-center text-sm font-bold text-brand-700">
                 轉角（牆 {prevWall(selection.index) + 1}／牆 {selection.index + 1}）
               </span>
               <div className="flex items-end gap-1">
@@ -538,7 +543,7 @@ export default function FloorPlanEditor() {
               <button
                 disabled={n <= 3}
                 onClick={() => removeVertex(selection.index)}
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-40"
+                className="inline-flex h-8 items-center rounded-pill border border-danger/40 bg-white px-3 text-xs font-medium text-danger transition-colors duration-200 ease-soft hover:bg-danger/10 disabled:opacity-40"
               >
                 刪除轉角
               </button>
@@ -546,10 +551,10 @@ export default function FloorPlanEditor() {
           )}
         </div>
 
-        <div className="border-t border-slate-100">
+        <div className="border-t border-line">
           <div className="flex items-center justify-between px-4 py-2">
-            <button onClick={() => setShowTable((v) => !v)} className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
-              <span className={`inline-block transition-transform ${showTable ? 'rotate-90' : ''}`}>▸</span>
+            <button onClick={() => setShowTable((v) => !v)} className="flex items-center gap-1.5 text-sm font-bold text-ink">
+              <ChevronRight size={16} strokeWidth={1.75} className={`transition-transform duration-200 ease-soft ${showTable ? 'rotate-90' : ''}`} />
               全部尺寸與角度
             </button>
             <div className="flex gap-1.5">
@@ -558,24 +563,26 @@ export default function FloorPlanEditor() {
                   record()
                   setAllLocks(true)
                 }}
-                className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="inline-flex h-8 items-center gap-1 rounded-pill border border-line bg-white px-3 text-xs font-medium text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface"
               >
-                🔒 全部鎖定
+                <Lock size={12} strokeWidth={1.75} />
+                全部鎖定
               </button>
               <button
                 onClick={() => {
                   record()
                   setAllLocks(false)
                 }}
-                className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="inline-flex h-8 items-center gap-1 rounded-pill border border-line bg-white px-3 text-xs font-medium text-ink-2 transition-colors duration-200 ease-soft hover:bg-surface"
               >
-                🔓 全部解鎖
+                <LockOpen size={12} strokeWidth={1.75} />
+                全部解鎖
               </button>
             </div>
           </div>
           {showTable && (
             <div className="max-h-[26vh] overflow-y-auto px-4 pb-3">
-              <p className="mb-2 text-[11px] text-slate-400">量好的數值按 🔒 鎖住；之後修改或拖曳時，鎖住的長度和角度都不會被改到。</p>
+              <p className="mb-2 text-[11px] text-ink-4">量好的數值按鎖頭鎖住；之後修改或拖曳時，鎖住的長度和角度都不會被改到。</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {floor.map((_, i) => {
                   const j = (i + 1) % n
@@ -584,11 +591,11 @@ export default function FloorPlanEditor() {
                     <div
                       key={`q${i}-${n}`}
                       onClick={() => setSel({ kind: 'wall', index: i })}
-                      className={`grid grid-cols-[3rem_1fr_1fr] items-center gap-2 rounded-lg border px-2 py-1.5 ${
-                        active ? 'border-sky-400 bg-sky-50' : 'border-slate-200 bg-white'
+                      className={`grid grid-cols-[3rem_1fr_1fr] items-center gap-2 rounded-field border px-2 py-1.5 ${
+                        active ? 'border-brand-400 bg-brand-50' : 'border-line bg-white'
                       }`}
                     >
-                      <span className="text-sm font-semibold text-slate-700">牆 {i + 1}</span>
+                      <span className="text-sm font-medium text-ink-2">牆 {i + 1}</span>
                       <div className="flex items-end gap-1">
                         <div className="min-w-0 flex-1">
                           <NumberField
@@ -639,11 +646,20 @@ function LockButton({ locked, onToggle }: { locked: boolean; onToggle: () => voi
         e.stopPropagation()
         onToggle()
       }}
-      className={`flex h-[30px] w-7 shrink-0 items-center justify-center rounded-lg border text-sm ${
-        locked ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white opacity-50 hover:opacity-100'
+      className={`flex h-[30px] w-7 shrink-0 items-center justify-center rounded-field border transition-colors duration-200 ease-soft ${
+        locked ? 'border-brand-300 bg-brand-50 text-brand-700' : 'border-line bg-white text-ink-4 hover:text-ink'
       }`}
     >
-      {locked ? '🔒' : '🔓'}
+      {locked ? <Lock size={13} strokeWidth={1.75} /> : <LockOpen size={13} strokeWidth={1.75} />}
     </button>
+  )
+}
+
+function LockGlyph({ x, y, s }: { x: number; y: number; s: number }) {
+  return (
+    <g transform={`translate(${x - s / 2} ${y - s / 2}) scale(${s / 24})`} fill="none" stroke="#8e4c31" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none">
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </g>
   )
 }

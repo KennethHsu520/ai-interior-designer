@@ -114,7 +114,7 @@ export default function WallItemMesh({
             opacity={isDoor ? (selected ? 0.3 : 0.12) : 0.35}
             roughness={isDoor ? 0.8 : 0.1}
           />
-          {selected && <Edges color="#f59e0b" lineWidth={3} />}
+          {selected && <Edges color="#c4815f" lineWidth={3} />}
         </mesh>
       </group>
     )
@@ -125,7 +125,7 @@ export default function WallItemMesh({
     <mesh position={[cx, cy, depth / 2 + 0.005]} castShadow {...handlers}>
       <boxGeometry args={[item.width, item.height, depth]} />
       <meshStandardMaterial color={color} transparent opacity={opacity} emissive={item.type === 'light' ? color : '#000'} emissiveIntensity={0.3} />
-      <Edges color={selected ? '#f59e0b' : '#1e293b'} lineWidth={selected ? 3 : 1} />
+      <Edges color={selected ? '#c4815f' : '#1d1d1f'} lineWidth={selected ? 3 : 1} />
     </mesh>
   )
 }

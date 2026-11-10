@@ -64,7 +64,7 @@ export default function WallElevation({
   return (
     <div
       ref={ref}
-      className="relative w-full touch-none overflow-hidden rounded-lg border border-slate-300 bg-[#f4f1ec] select-none"
+      className="relative w-full touch-none overflow-hidden rounded-field border border-line-2 bg-[#f4f1ec] select-none"
       style={{ aspectRatio: `${length} / ${height}` }}
       onPointerMove={move}
       onPointerUp={end}
@@ -86,7 +86,7 @@ export default function WallElevation({
         />
       )}
       {!photo && (
-        <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">尚未拍照（仍可手動新增物件）</div>
+        <div className="absolute inset-0 flex items-center justify-center text-xs text-ink-4">尚未拍照（仍可手動新增物件）</div>
       )}
       {items.map((it) => {
         const info = itemTypeInfo(it.type)
@@ -95,7 +95,7 @@ export default function WallElevation({
           <div
             key={it.id}
             onPointerDown={(e) => start(e, it, 'move')}
-            className={`absolute cursor-move rounded-sm border-2 ${sel ? 'z-10 ring-2 ring-amber-400' : ''}`}
+            className={`absolute cursor-move rounded-sm border-2 ${sel ? 'z-10 ring-2 ring-brand-400' : ''}`}
             style={{
               left: `${(it.offset / length) * 100}%`,
               width: `${(it.width / length) * 100}%`,
@@ -109,7 +109,7 @@ export default function WallElevation({
             }}
           >
             <span
-              className="pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded px-1 text-[9px] font-semibold text-white"
+              className="pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded px-1 text-[9px] font-medium text-white"
               style={{ background: info.color }}
             >
               {info.label}
@@ -117,7 +117,7 @@ export default function WallElevation({
             {sel && (
               <span
                 onPointerDown={(e) => start(e, it, 'resize')}
-                className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-se-resize rounded-full border-2 border-white bg-amber-500 shadow"
+                className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-se-resize rounded-full border-2 border-white bg-brand-500 shadow-card"
               />
             )}
           </div>

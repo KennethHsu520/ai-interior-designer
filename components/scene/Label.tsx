@@ -7,7 +7,7 @@ export default function Label({
   text,
   position,
   background = 'rgba(255,255,255,0.9)',
-  color = '#334155',
+  color = '#424245',
   size = 0.16,
   visible = true,
 }: {
