@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Package, Upload } from 'lucide-react'
 import type { CatalogItem } from '@/types/room'
 import { processGlb, sha256Hex, type ProcessedModel } from '@/lib/modelProcess'
 import { renderThumbnail } from '@/lib/thumbnails'
 import { insertFurniture, uploadAssets } from '@/lib/adminApi'
 import { fitModel } from '@/lib/modelMeasure'
+import Button from '@/components/ui/Button'
+import { helpTextClass, noteClass, sectionTitleClass } from '@/components/ui/fields'
 import ItemFields, { applyDraft, draftProblems, type ItemDraft } from './ItemFields'
 
 const MB = (n: number) => `${(n / 1024 / 1024).toFixed(2)} MB`
@@ -124,10 +127,10 @@ export default function NewFurniture({ existing, onCreated }: { existing: Catalo
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-base font-bold">新增家具</h2>
-        <p className="text-xs leading-relaxed text-slate-500">
+    <section className="flex flex-col gap-5 rounded-card border border-line bg-white p-5 shadow-hairline sm:p-6">
+      <div className="flex flex-col gap-1.5">
+        <h2 className={sectionTitleClass}>新增家具</h2>
+        <p className={helpTextClass}>
           上傳 .glb 後會自動讀取模型範圍、縮小貼圖（最長邊 1024）、用 meshopt 壓縮、產生縮圖，檔名使用內容指紋並設定一年快取，節省 Supabase 免費流量。請只上傳授權允許商用的模型。
         </p>
       </div>
@@ -135,42 +138,46 @@ export default function NewFurniture({ existing, onCreated }: { existing: Catalo
       <button
         onClick={() => fileRef.current?.click()}
         disabled={step.kind === 'reading' || step.kind === 'saving'}
-        className="flex flex-col items-center gap-1 rounded-xl border-2 border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600 hover:border-sky-400 hover:bg-sky-50 disabled:opacity-60"
+        className="flex flex-col items-center gap-2 rounded-card border-2 border-dashed border-line-2 bg-surface px-4 py-8 text-sm text-ink-2 transition-colors duration-200 ease-soft hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60"
       >
-        <span className="text-2xl">📦</span>
-        {step.kind === 'reading' ? '讀取與壓縮中…' : fileName ? `已選擇：${fileName}（點此更換）` : '選擇 .glb 模型檔'}
+        <span className="flex h-11 w-11 items-center justify-center rounded-pill bg-white text-brand-500 shadow-hairline">
+          {step.kind === 'reading' ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-brand-500" /> : <Upload size={20} strokeWidth={1.75} />}
+        </span>
+        <span className="font-medium text-ink">{step.kind === 'reading' ? '讀取與壓縮中…' : fileName ? `已選擇：${fileName}` : '選擇 .glb 模型檔'}</span>
+        <span className="text-xs text-ink-3">{fileName && step.kind !== 'reading' ? '點此更換檔案' : '最大 80 MB，會在瀏覽器裡先壓縮'}</span>
       </button>
       <input ref={fileRef} type="file" accept=".glb,model/gltf-binary" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className={noteClass.error}>{error}</p>}
 
       {(ready || step.kind === 'saving') && (
         <>
           {ready && (
-            <div className="flex flex-wrap items-center gap-4 rounded-xl bg-slate-50 p-3">
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg bg-white">
-                {ready.thumb ? <img src={ready.thumb} alt="縮圖預覽" className="h-full w-full object-contain" /> : <span className="text-xs text-slate-400">無法產生縮圖</span>}
+            <div className="flex flex-wrap items-center gap-5 rounded-card bg-surface p-4">
+              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-field bg-white shadow-hairline">
+                {ready.thumb ? <img src={ready.thumb} alt="縮圖預覽" className="h-full w-full object-contain" /> : <Package size={24} strokeWidth={1.5} className="text-ink-4" />}
               </div>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-slate-600">
-                <dt className="text-slate-400">原始範圍</dt>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs text-ink-2">
+                <dt className="text-ink-4">原始範圍</dt>
                 <dd className="tabular-nums">
                   {ready.model.measure.rawSize.width} × {ready.model.measure.rawSize.depth} × {ready.model.measure.rawSize.height}（模型單位）
                 </dd>
-                <dt className="text-slate-400">三角面數</dt>
+                <dt className="text-ink-4">三角面數</dt>
                 <dd className="tabular-nums">{ready.model.triangles.toLocaleString()}</dd>
-                <dt className="text-slate-400">檔案大小</dt>
+                <dt className="text-ink-4">檔案大小</dt>
                 <dd className="tabular-nums">
-                  {MB(ready.model.before)} → <b className="text-emerald-700">{MB(ready.model.after)}</b>（{Math.round((1 - ready.model.after / ready.model.before) * 100)}% 更小）
+                  {MB(ready.model.before)} 壓縮為 <b className="font-medium text-success">{MB(ready.model.after)}</b>（{Math.round((1 - ready.model.after / ready.model.before) * 100)}% 更小）
                 </dd>
               </dl>
             </div>
           )}
           <ItemFields draft={draft} onChange={setDraft} rawSize={ready?.model.measure.rawSize ?? { width: 1, depth: 1, height: 1 }} />
           <div className="flex items-center justify-end gap-3">
-            {step.kind === 'saving' && <span className="text-sm text-sky-700">{step.text}</span>}
-            <button onClick={submit} disabled={step.kind === 'saving' || !ready} className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-500 disabled:bg-slate-300">
+            {step.kind === 'saving' && <span className="text-sm text-brand-700">{step.text}</span>}
+            <Button onClick={submit} disabled={step.kind === 'saving' || !ready}>
+              <Upload size={16} strokeWidth={1.75} />
               上傳並上架
-            </button>
+            </Button>
           </div>
         </>
       )}
