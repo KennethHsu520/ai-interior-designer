@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: '素材來源與授權｜AI室內設�
 export default function LicensesPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 text-slate-800">
-      <Link href="/" className="text-sm text-sky-600 hover:underline">
+      <Link href="/design" className="text-sm text-sky-600 hover:underline">
         ← 回到設計畫面
       </Link>
       <h1 className="mt-4 text-2xl font-black">素材來源與授權</h1>

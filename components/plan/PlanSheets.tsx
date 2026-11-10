@@ -138,7 +138,7 @@ export default function PlanSheets() {
   return (
     <div className="min-h-dvh bg-slate-200 py-6 print:bg-white print:py-0">
       <div className="no-print sticky top-0 z-10 mx-auto mb-6 flex max-w-[297mm] flex-wrap items-center gap-2 rounded-xl bg-white/95 px-4 py-3 shadow backdrop-blur">
-        <Link href="/" className="text-sm text-sky-700 hover:underline">
+        <Link href="/design" className="text-sm text-sky-700 hover:underline">
           ← 回到設計
         </Link>
         <h1 className="mr-auto text-base font-black text-slate-800">設計圖輸出（共 {total} 張 A4 橫式）</h1>

@@ -160,11 +160,15 @@ type PlacedFurniture = {
 ## 資料夾結構
 ```
 app/
-  page.tsx                 主畫面（AppShell → Editor）
+  page.tsx                 首頁（components/landing/LandingPage，行銷頁）
+  design/page.tsx          設計工作台（AppShell → Editor）
+  globals.css              設計系統 tokens（色彩、圓角、陰影、字級），全站共用
   admin/page.tsx           家具庫管理（Supabase Auth）
   licenses/page.tsx        素材與模型授權（從資料庫讀取）
   plan/page.tsx            設計圖輸出（PDF／DXF）
 components/
+  landing/                 首頁區塊、HeroScene（程式生成家具的 3D 展示）、Reveal 捲動淡入
+  ui/Button.tsx            全站統一按鈕（primary／secondary／ghost／inverse）
   Editor.tsx
   admin/                   AdminApp、FurnitureList、NewFurniture、ItemFields
   scene/                   RoomScene、Wall、WallItemMesh、FurnitureMesh、HistoryControls、ViewControls…
@@ -194,6 +198,14 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=   只給本機 scripts/migrate-catalog.ts 用，絕不放前端
 ```
+
+## 設計系統（2026-11-10 起，全站統一）
+- 字體：Inter＋Noto Sans TC（`app/layout.tsx` 以 Google Fonts `<link>` 載入），字重只用 400／500／700
+- 主色 `brand-500 #a65a3a`（陶土色）、hover `brand-600`、淺底 `brand-100`；輔色 `sage-500 #7a8b76` 只作點綴
+- 文字 `ink`／`ink-2`／`ink-3`、邊框 `line`、區塊底 `surface`、頁面底 `canvas`
+- 圓角：按鈕 `rounded-pill`、輸入框 `rounded-field`（12px）、卡片 `rounded-card`（20px）、主視覺 `rounded-hero`（28px）
+- 陰影：`shadow-hairline`／`shadow-card`／`shadow-card-hover`／`shadow-float`；動畫 200–300ms、`ease-soft`
+- 圖示一律用 `lucide-react`（strokeWidth 1.75），不用 emoji；新頁面請沿用這套，不要另外定義顏色
 
 ## 注意事項
 - 單張照片無法得到精確尺寸，房間尺寸以使用者輸入為準，AI 只負責判斷「牆上有什麼、大概在哪」，最後一定要讓使用者確認
